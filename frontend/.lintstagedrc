@@ -1,0 +1,10 @@
+{
+  "**/*.{js,ts,jsx,tsx,json}": [
+    "pnpm lint",
+    "pnpm format"
+  ],
+  "../backend/**/*.py": [
+    "cd ../backend && ruff check --fix .",
+    "cd ../backend && ruff format ."
+  ]
+}
