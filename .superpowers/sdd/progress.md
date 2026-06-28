@@ -34,4 +34,5 @@
 - [x] Task 10: Multilingual & RTL Support (i18n) (commits 3573c05..3573c05, review clean)
 - [x] Task 11: Edge Rate Limiting (DDoS Protection) (commits afa6018..afa6018, review clean)
 - [x] Task 11b: Progressive Web App Offline PWA Setup (commits 8142175..8142175, review clean)
+- [x] Task 12: Dynamic Open Graph (OG) Images (commits 4c83fe8..4c83fe8, review clean)
 
