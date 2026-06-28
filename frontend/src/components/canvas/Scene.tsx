@@ -46,9 +46,36 @@ function SafeModel() {
 }
 
 export default function Scene() {
+	const [contextLost, setContextLost] = React.useState(false);
+
 	return (
 		<div className="fixed inset-0 -z-10 bg-[#0B0C10]">
-			<Canvas camera={{ position: [0, 2, 8], fov: 45 }}>
+			{contextLost && (
+				<div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+					<div className="glass-panel p-6 max-w-sm text-center flex flex-col gap-3">
+						<h3 className="font-semibold text-lg text-amber-400">
+							Graphics Context Reset
+						</h3>
+						<p className="text-sm opacity-80">
+							Reloading 3D scene, please wait...
+						</p>
+					</div>
+				</div>
+			)}
+
+			<Canvas
+				camera={{ position: [0, 2, 8], fov: 45 }}
+				onCreated={(state) => {
+					const canvasEl = state.gl.domElement;
+					canvasEl.addEventListener("webglcontextlost", (e) => {
+						e.preventDefault();
+						setContextLost(true);
+					});
+					canvasEl.addEventListener("webglcontextrestored", () => {
+						setContextLost(false);
+					});
+				}}
+			>
 				<Suspense fallback={null}>
 					<ambientLight intensity={0.4} />
 					<directionalLight position={[5, 10, 5]} intensity={0.8} />
