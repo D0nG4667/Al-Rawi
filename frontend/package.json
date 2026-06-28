@@ -12,6 +12,7 @@
 		"prepare": "husky"
 	},
 	"dependencies": {
+		"@neondatabase/auth": "0.4.2-beta",
 		"@react-three/drei": "^10.7.7",
 		"@react-three/fiber": "^9.6.1",
 		"@sentry/nextjs": "^10.62.0",
