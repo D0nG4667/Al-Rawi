@@ -14,10 +14,4 @@ export default withSentryConfig(nextConfig, {
 	silent: true,
 	org: "al-rawi",
 	project: "frontend",
-
-	// Upload source maps in dev or production builds
-	widenClientFileUpload: true,
-	hideSourceMaps: true,
-	disableLogger: true,
-	automaticVercelMonitors: true,
 });
