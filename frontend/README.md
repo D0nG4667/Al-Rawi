@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Al-Rawi Frontend: Core Workspace
 
-## Getting Started
+This is the Next.js 16 core workspace for the Al-Rawi Saudi Heritage & Tourism AI Oracle application.
 
-First, run the development server:
+## Architecture Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+The workspace implements a **split-layer rendering architecture**:
+1. **WebGL Layer (z-index 0)**: A fixed React Three Fiber (`@react-three/fiber` and `@react-three/drei`) canvas running behind the DOM. It loads compressed Draco GLTF/GLB models dynamically.
+2. **DOM Layer (z-index 10)**: A container overlay hosting semantic components, guide personalizations, and form interfaces.
+3. **State Management**: Global coordination is powered by a synchronized Zustand store (`useUIStore`) to coordinate camera coordinates, loading states, and viewport target nodes.
+
+---
+
+## Key Design Patterns
+
+### 1. Extensible Artifact Factory
+Historical media types (Mind Maps, Audio files, PDFs, 3D highlights) are resolved and rendered dynamically via the `ArtifactFactory` component pattern, keeping display panels Open-Closed Principle (OCP) compliant.
+
+### 2. WebGL Context Recovery
+The 3D Scene (`Scene.tsx`) attaches event listeners to capture `webglcontextlost` and `webglcontextrestored`, dynamically overlaying recovery loading UI banners and resetting geometries.
+
+### 3. Geofencing Coordinates
+The custom hook `useGeofence.ts` resolves user geolocation coordinates, matching bounds against UNESCO historical sites to automatically refocus viewports.
+
+---
+
+## Local Environment Config
+
+Create `frontend/.env.local` with the following variables:
+
+```env
+# Public donation links
+NEXT_PUBLIC_DONATION_LINK=https://sociabuzz.com/gabcares/support
+
+# Upstash Serverless Redis REST Config
+UPSTASH_REDIS_REST_URL=your_upstash_redis_rest_url
+UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_rest_token
+
+# Neon Auth Configuration
+NEON_AUTH_BASE_URL=your_neon_auth_base_url
+NEON_AUTH_COOKIE_SECRET=your_32_character_cookie_secret
+NEXT_PUBLIC_NEON_AUTH_URL=http://localhost:3000/api/auth
+
+# Google OAuth Credentials
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Development Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Run local dev server (Next.js Turbopack)
+pnpm dev
 
-## Learn More
+# Check code formatting and lints (Biome)
+pnpm lint
+pnpm format
 
-To learn more about Next.js, take a look at the following resources:
+# Build production optimized client bundles
+pnpm build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
+This software is licensed under the [Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/) license. 
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Portions of this project are part of the Al-Rawi national tourism archives initiative. 
+Author & Maintainer: Gabriel Okundaye and the Al-Rawi Development Team.
