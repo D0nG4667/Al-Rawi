@@ -45,11 +45,11 @@ export default function DocumentRequestForm() {
 			setStatus("success");
 			setFeedback("Document request submitted successfully for ingestion!");
 			setUrl("");
-		} catch (error: any) {
+		} catch (error) {
 			setStatus("error");
-			setFeedback(
-				error.message || "An error occurred. Please try again later.",
-			);
+			const errorMessage =
+				error instanceof Error ? error.message : "Failed to submit request.";
+			setFeedback(errorMessage);
 		}
 	};
 

@@ -1,5 +1,3 @@
-import type React from "react";
-
 export type ArtifactType = "MINDMAP" | "AUDIO" | "3D_MODEL" | "PDF";
 
 interface ArtifactProps {
