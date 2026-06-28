@@ -1,0 +1,44 @@
+[project]
+name = "al-rawi-backend"
+version = "0.1.0"
+description = "Al-Rawi FastAPI RAG Backend"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn>=0.28.0",
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.2.0",
+    "langchain>=0.1.0",
+    "langchain-postgres>=0.0.3",
+    "pgvector>=0.2.5",
+    "psycopg[binary]>=3.1.18",
+    "redis>=5.0.3",
+    "arq>=0.25.0",
+    "boto3>=1.34.0",
+    "cohere>=5.0.0",
+    "farasa>=0.0.1",
+    "llmlingua>=0.2.0",
+    "mishkal>=0.1.0",
+    "elevenlabs>=0.3.0",
+    "gtts>=2.5.1",
+    "playwright>=1.42.0",
+    "xxhash>=3.4.1",
+    "pydantic-ai>=0.0.1",
+    "sse-starlette>=2.0.0",
+    "structlog>=24.1.0",
+    "sentry-sdk[fastapi]>=1.40.0",
+    "alembic>=1.13.1"
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.3.0",
+    "ragas>=0.1.0"
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
