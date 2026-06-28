@@ -1,0 +1,67 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node & Biome
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      - run: cd frontend && pnpm install --frozen-lockfile
+      - run: cd frontend && pnpm lint
+      - run: cd frontend && pnpm test
+
+      - name: Setup Python & Ruff
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - run: cd backend && uv sync
+      - run: ruff check backend/
+      - run: pytest backend/
+
+      # ENTERPRISE INTEGRATION: Dynamic Neon DB Branching & RAGAS Evaluations
+      - name: Create Neon DB Branch for Integration Testing & Sync to Vercel
+        if: github.event_name == 'pull_request'
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          pnpm dlx @neondatabase/api-cli vercel
+          # Create transient branch from main
+          BRANCH_DATA=$(neon branches create --project-id $NEON_PROJECT_ID --name pr-${{ github.event.number }} --output json)
+          CONN_STR=$(echo $BRANCH_DATA | jq -r '.connection_uri')
+          echo "DATABASE_URL=$CONN_STR" >> $GITHUB_ENV
+          
+          # Dynamic Vercel Sync: Inject branch DB URL into this specific Vercel PR Environment
+          vercel env add DATABASE_URL "$CONN_STR" preview git-${{ github.head_ref }} --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID --yes
+          
+          # Run database migrations against transient branch
+          cd backend && uv run alembic upgrade head
+          # Run RAGAS and LangSmith evaluations
+          uv run pytest backend/tests/test_rag.py
+
+      - name: Delete Neon DB Branch
+        if: always() && github.event_name == 'pull_request'
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+        run: |
+          neon branches delete pr-${{ github.event.number }} --project-id $NEON_PROJECT_ID --force
