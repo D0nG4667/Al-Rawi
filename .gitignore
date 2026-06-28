@@ -98,3 +98,7 @@ pytestdebug.log
 *.swo
 .DS_Store
 Thumbs.db
+
+# Frontend overrides to prevent global lib/ ignore matching src/lib/
+!frontend/src/lib/
+
