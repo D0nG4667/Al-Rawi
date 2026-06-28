@@ -1,5 +1,6 @@
 import Scene from "@/components/canvas/Scene";
 import SupportButton from "@/components/ui/SupportButton";
+import DocumentRequestForm from "@/components/ui/DocumentRequestForm";
 import { getTranslations } from "next-intl/server";
 
 export default async function Home({
@@ -51,23 +52,29 @@ export default async function Home({
 						<h2 className="font-semibold mb-4 text-lg border-b border-white/10 pb-2">
 							{t("Dashboard.uploadTitle")}
 						</h2>
-						<div className="flex-1 border border-dashed border-white/20 rounded-lg p-6 flex flex-col items-center justify-center text-center opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
-							<svg
-								className="w-8 h-8 mb-3 opacity-60"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-								xmlns="http://www.w3.org/2000/svg"
-								aria-hidden="true"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth="2"
-									d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-								/>
-							</svg>
-							<span className="text-sm">{t("Dashboard.uploadDropzone")}</span>
+						<div className="flex-1 flex flex-col gap-6 justify-center">
+							<div className="border border-dashed border-white/20 rounded-lg p-6 flex flex-col items-center justify-center text-center opacity-70">
+								<svg
+									className="w-8 h-8 mb-3 opacity-60"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+									xmlns="http://www.w3.org/2000/svg"
+									aria-hidden="true"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth="2"
+										d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+									/>
+								</svg>
+								<span className="text-sm">{t("Dashboard.uploadDropzone")}</span>
+							</div>
+
+							<div className="border-t border-white/10 pt-4">
+								<DocumentRequestForm />
+							</div>
 						</div>
 					</aside>
 
