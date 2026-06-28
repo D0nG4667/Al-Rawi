@@ -1,0 +1,16 @@
+{
+	"Common": {
+		"title": "Al-Rawi",
+		"subtitle": "Saudi Architectural Heritage & AI Oracle",
+		"tagline": "Ingest historical maps, UNESCO archives, and ask our AI Oracle about Al-Ula, Diriyah, and beyond."
+	},
+	"Dashboard": {
+		"uploadTitle": "Ingest Heritage Documents",
+		"uploadDropzone": "Drag and drop historical PDFs, UNESCO dossiers, or archaeological reports",
+		"uploadButton": "Select PDF File",
+		"unsupportedFile": "Only PDF documents are supported.",
+		"viewMap": "Explore Heritage Map",
+		"supportUs": "Support Al-Rawi",
+		"chatPlaceholder": "Ask Al-Rawi Oracle about Saudi heritage..."
+	}
+}
