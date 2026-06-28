@@ -37,4 +37,5 @@
 - [x] Task 12: Dynamic Open Graph (OG) Images (commits 4c83fe8..4c83fe8, review clean)
 - [x] Task 13: "Request Document" UI Form (commits 7afd595..7afd595, review clean)
 - [x] Task 14: Frontend Core Design Patterns Setup (commits 27bdede..27bdede, review clean)
+- [x] Task 15a: High-Fidelity Cinematic Landing Page (commits 5858498..5858498, review clean)
 

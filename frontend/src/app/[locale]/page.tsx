@@ -1,6 +1,7 @@
 import Scene from "@/components/canvas/Scene";
 import SupportButton from "@/components/ui/SupportButton";
 import DocumentRequestForm from "@/components/ui/DocumentRequestForm";
+import PersonaSelector from "@/components/ui/PersonaSelector";
 import { getTranslations } from "next-intl/server";
 
 export default async function Home({
@@ -89,12 +90,15 @@ export default async function Home({
 					</div>
 
 					{/* Right panel: Agentic Chat */}
-					<aside className="w-96 glass-panel p-5 pointer-events-auto flex flex-col">
-						<h2 className="font-semibold mb-4 text-lg border-b border-white/10 pb-2">
+					<aside className="w-96 glass-panel p-5 pointer-events-auto flex flex-col gap-4">
+						<h2 className="font-semibold text-lg border-b border-white/10 pb-2">
 							Oracle Guide
 						</h2>
-						<div className="flex-1 bg-black/30 rounded-lg mb-4 p-4 overflow-y-auto text-sm opacity-80">
+						<div className="flex-1 bg-black/30 rounded-lg p-4 overflow-y-auto text-sm opacity-80">
 							{t("Common.tagline")}
+						</div>
+						<div className="border-t border-white/10 pt-3">
+							<PersonaSelector />
 						</div>
 						<input
 							type="text"
