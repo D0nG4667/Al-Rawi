@@ -1,9 +1,11 @@
 import Scene from "@/components/canvas/Scene";
+import SupportButton from "@/components/ui/SupportButton";
 
 export default function Home() {
 	return (
 		<main className="relative min-h-[200vh]">
 			<Scene />
+			<SupportButton />
 
 			{/* UI Layer */}
 			<div className="relative z-10 container mx-auto p-6 flex flex-col h-screen pointer-events-none text-white">
