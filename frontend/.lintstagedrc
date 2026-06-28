@@ -4,7 +4,7 @@
     "pnpm format"
   ],
   "../backend/**/*.py": [
-    "cd ../backend && ruff check --fix .",
-    "cd ../backend && ruff format ."
+    "uv run --project ../backend ruff check --fix",
+    "uv run --project ../backend ruff format"
   ]
 }
