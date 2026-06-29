@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     REDIS_URL: str
     SENTRY_DSN: str | None = None
 
+    # LangSmith settings
+    LANGCHAIN_TRACING_V2: str | None = None
+    LANGCHAIN_API_KEY: str | None = None
+    LANGCHAIN_PROJECT: str | None = None
+
     # Third Party integrations
     ELEVEN_API_KEY: str | None = None
     GROQ_API_KEY: str | None = None

@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 import redis.asyncio as aioredis
+import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -8,9 +9,21 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.router import api_router
 from app.core.config import get_settings
+from app.core.logging import setup_logging
 
 # Retrieve application configurations
 settings = get_settings()
+
+# Initialize structured logging
+setup_logging()
+
+# Initialize Sentry SDK
+if settings.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+    )
 
 # Redis Connection Pool Placeholder (shared across endpoints)
 redis_client = None
