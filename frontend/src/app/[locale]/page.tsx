@@ -38,7 +38,7 @@ export default async function Home({
 							{switchLabel}
 						</a>
 						<div className="flex items-center gap-2">
-							<span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span>
+							<span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]" />
 							<span className="text-xs opacity-80 tracking-wide font-medium">
 								Gemini Connected
 							</span>
