@@ -20,7 +20,7 @@ To achieve this:
 
 ### Frontend Package
 
-#### [MODIFY] [package.json](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/package.json)
+#### [MODIFY] [package.json](../../../frontend/package.json)
 * Add `@biomejs/biome` to `devDependencies` matching the schema target version (e.g. latest `^1.9.4` or `^1.8.3`).
 * Keep/add the scripts:
   * `"lint": "biome lint ."`
@@ -30,7 +30,7 @@ To achieve this:
 
 ### IDE Editor Configurations
 
-#### [NEW] [.vscode/settings.json](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/.vscode/settings.json)
+#### [NEW] [.vscode/settings.json](../../../.vscode/settings.json)
 * Workspace-level editor configurations to map JS/TS/JSON formatter to `biomejs.biome` and resolve from the local `frontend/node_modules` wrapper binary.
 
 ```json
@@ -63,7 +63,7 @@ To achieve this:
 }
 ```
 
-#### [NEW] [frontend/.vscode/settings.json](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/.vscode/settings.json)
+#### [NEW] [frontend/.vscode/settings.json](../../../frontend/.vscode/settings.json)
 * Folder-level configurations when the `frontend` folder is opened directly as the workspace root.
 
 ```json
