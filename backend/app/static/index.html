@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Al-Rawi Enterprise AI API Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #07080d;
+            --card-bg: rgba(18, 20, 32, 0.6);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --accent-primary: #66FCF1;
+            --accent-hover: #45A29E;
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --neon-glow: 0 0 20px rgba(102, 252, 241, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(102, 252, 241, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(69, 162, 158, 0.05) 0%, transparent 40%);
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+        }
+
+        .logo-section h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #FFFFFF 30%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-section p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .doc-link {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .doc-link.swagger {
+            background: rgba(102, 252, 241, 0.1);
+            color: var(--accent-primary);
+            border: 1px solid rgba(102, 252, 241, 0.2);
+        }
+
+        .doc-link.swagger:hover {
+            background: rgba(102, 252, 241, 0.2);
+            box-shadow: 0 0 10px rgba(102, 252, 241, 0.2);
+        }
+
+        .doc-link.redoc {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .doc-link.redoc:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .status-badge {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10B981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10B981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--neon-glow);
+        }
+
+        h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--accent-primary);
+            padding-left: 12px;
+        }
+
+        .endpoint-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .endpoint-row {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .endpoint-row:hover {
+            border-color: rgba(102, 252, 241, 0.3);
+            background: rgba(102, 252, 241, 0.01);
+        }
+
+        .endpoint-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .method {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .method.get { background: rgba(59, 130, 246, 0.1); color: #3B82F6; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .method.post { background: rgba(16, 185, 129, 0.1); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.2); }
+
+        .path {
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: #FFF;
+        }
+
+        .desc {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .payload-info {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .sys-info-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .sys-info-table td {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sys-info-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .sys-info-label {
+            color: var(--text-muted);
+        }
+
+        .sys-info-val {
+            text-align: right;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .snippet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+
+        .snippet-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: #FFF;
+            border-color: var(--accent-primary);
+        }
+
+        pre {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        code {
+            font-family: 'Space Grotesk', monospace;
+            font-size: 12px;
+            color: #E5E7EB;
+        }
+
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            padding-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-section">
+                <h1>Al-Rawi API Gateway</h1>
+                <p>Saudi Heritage & Tourism AI Oracle Engine</p>
+            </div>
+            <div class="header-actions">
+                <a href="/docs" class="doc-link swagger" target="_blank">Swagger UI Docs</a>
+                <a href="/redoc" class="doc-link redoc" target="_blank">ReDoc Schema</a>
+                <div class="status-badge">
+                    <span class="status-dot"></span>
+                    <span>SYSTEM ONLINE</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <h2>API Core Endpoints</h2>
+                <div class="endpoint-list">
+                    <!-- Health Check Endpoint -->
+                    <div class="endpoint-row">
+                        <div class="endpoint-meta">
+                            <span class="method get">GET</span>
+                            <span class="path">/health</span>
+                        </div>
+                        <p class="desc">Retrieves structured JSON diagnostics representing connection latencies and readiness profiles for Neon PostgreSQL, Upstash Redis clusters, and metadata settings.</p>
+                        <div class="payload-info">
+                            Returns: {"status": "healthy", "database": {"status": "connected", "latency_ms": 2.5}, "redis": {"status": "connected", "latency_ms": 1.2}}
+                        </div>
+                    </div>
+
+                    <!-- Upload Endpoint -->
+                    <div class="endpoint-row">
+                        <div class="endpoint-meta">
+                            <span class="method post">POST</span>
+                            <span class="path">/api/v1/upload</span>
+                        </div>
+                        <p class="desc">Secure document ingestion gateway. Parses uploaded PDFs, extracts architectural & heritage metadata, executes semantic chunking, and saves records into the vector database.</p>
+                        <div class="payload-info">
+                            Form-Data: file (file, binary) | api_key (text)
+                        </div>
+                        <div class="snippet-header">
+                            <span class="snippet-title">cURL Verification Script</span>
+                            <button class="copy-btn" onclick="copySnippet()">Copy Command</button>
+                        </div>
+                        <pre><code id="curl-code">curl -X POST "http://localhost:8000/api/v1/upload" \
+  -F "file=@/path/to/document.pdf" \
+  -F "api_key=your_gemini_api_key"</code></pre>
+                    </div>
+
+                    <!-- Simple Health Check -->
+                    <div class="endpoint-row">
+                        <div class="endpoint-meta">
+                            <span class="method get">GET</span>
+                            <span class="path">/api/v1/health</span>
+                        </div>
+                        <p class="desc">A lightweight JSON status check matching routing standards for microservices and cloud health-checking systems.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Diagnostics & Stack</h2>
+                <table class="sys-info-table">
+                    <tr>
+                        <td class="sys-info-label">App Title</td>
+                        <td class="sys-info-val" style="color: var(--accent-primary);">Al-Rawi API</td>
+                    </tr>
+                    <tr>
+                        <td class="sys-info-label">Framework</td>
+                        <td class="sys-info-val">FastAPI (Python)</td>
+                    </tr>
+                    <tr>
+                        <td class="sys-info-label">RAG Pipeline</td>
+                        <td class="sys-info-val">LangChain</td>
+                    </tr>
+                    <tr>
+                        <td class="sys-info-label">Embeddings Model</td>
+                        <td class="sys-info-val">Gemini 2.5 Flash</td>
+                    </tr>
+                    <tr>
+                        <td class="sys-info-label">Database Layer</td>
+                        <td class="sys-info-val">Neon PostgreSQL</td>
+                    </tr>
+                    <tr>
+                        <td class="sys-info-label">Vector Store</td>
+                        <td class="sys-info-val">pgvector</td>
+                    </tr>
+                    <tr>
+                        <td class="sys-info-label">Caching / Cache Pool</td>
+                        <td class="sys-info-val">Upstash Redis</td>
+                    </tr>
+                    <tr>
+                        <td class="sys-info-label">Environment Prefix</td>
+                        <td class="sys-info-val">/api/v1</td>
+                    </tr>
+                    <tr>
+                        <td class="sys-info-label">Version</td>
+                        <td class="sys-info-val">0.1.0</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 Al-Rawi Project. All rights reserved. Premium Core Architectures.</p>
+        </footer>
+    </div>
+
+    <script>
+        function copySnippet() {
+            const codeText = document.getElementById('curl-code').innerText;
+            navigator.clipboard.writeText(codeText).then(() => {
+                alert('cURL command copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+    </script>
+</body>
+</html>

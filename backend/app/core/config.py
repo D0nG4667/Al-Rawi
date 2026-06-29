@@ -6,8 +6,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # App General Settings
     APP_NAME: str = "Al-Rawi API"
+    APP_TITLE: str = "Al-Rawi API"
+    APP_DESCRIPTION: str = "Saudi Heritage & Tourism AI Oracle API Platform"
     APP_VERSION: str = "0.1.0"
     API_V1_STR: str = "/api/v1"
+    CORS_ORIGINS: list[str] = ["http://localhost:3000"]
 
     # API Keys & Secrets
     GOOGLE_API_KEY: str

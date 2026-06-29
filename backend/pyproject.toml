@@ -30,6 +30,7 @@ dependencies = [
     "sentry-sdk[fastapi]>=1.40.0",
     "alembic>=1.13.1",
     "pymupdf>=1.27.2.3",
+    "langchain-google-genai>=4.2.6",
 ]
 
 [tool.uv]
