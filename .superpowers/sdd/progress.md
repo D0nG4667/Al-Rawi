@@ -50,5 +50,6 @@
 - [x] Task 16: Initialize Python Backend Workspace (commits 935718d..935718d, review clean)
 - [x] Task 17: Setup Document Ingestion Endpoint (commits 3abdd58..6f77720, review clean)
 - [x] Task 18: Setup Resilient RAG Chat Endpoint (commits 7305769..merge, review clean)
+- [x] Task 19: Setup Row Level Security (RLS) & Multi-Tenant isolation (commits 0ad02fa..merge, review clean)
 
 
