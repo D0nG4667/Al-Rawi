@@ -15,7 +15,7 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"preset": "recommended"
 		}
 	},
 	"javascript": {
@@ -23,12 +23,18 @@
 			"quoteStyle": "double"
 		}
 	},
-	"organizeImports": {
-		"enabled": true
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": {
+					"level": "on"
+				}
+			}
+		}
 	},
 	"overrides": [
 		{
-			"include": ["public/**/*", "src/app/globals.css"],
+			"includes": ["**/public/**/*", "**/src/app/globals.css"],
 			"linter": {
 				"enabled": false
 			},
