@@ -13,6 +13,12 @@ from app.services.storage import upload_to_r2
 COLLECTION_NAME = "al_rawi_documents"
 
 
+def get_tenant_collection_name(api_key: str) -> str:
+    """Generates a secure, deterministic collection name based on the tenant API key."""
+    api_key_hash = hashlib.sha256(api_key.strip().encode("utf-8")).hexdigest()
+    return f"tenant_{api_key_hash[:16]}"
+
+
 def compute_sha256_hash(file_bytes: bytes) -> str:
     """Computes the SHA-256 hash of file bytes to prevent duplicate ingestion."""
     return hashlib.sha256(file_bytes).hexdigest()
@@ -96,10 +102,13 @@ def process_pdf(file_bytes: bytes, filename: str, api_key: str) -> Dict[str, Any
                 }
             )
 
+        # Resolve dynamic tenant-specific collection name
+        tenant_collection = get_tenant_collection_name(api_key)
+
         # Store in PGVector
         vectorstore = PGVector(
             embeddings=embeddings,
-            collection_name=COLLECTION_NAME,
+            collection_name=tenant_collection,
             connection=connection_string,
             use_jsonb=True,
         )
