@@ -4,6 +4,22 @@ import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import React, { Component, Suspense, type ReactNode } from "react";
 
+// Filter out THREE.Clock deprecation warnings triggered by react-three-fiber under the hood
+if (typeof window !== "undefined") {
+	const originalWarn = console.warn;
+	console.warn = (...args) => {
+		if (
+			args[0] &&
+			typeof args[0] === "string" &&
+			(args[0].includes("THREE.Clock") ||
+				args[0].includes("THREE.Clock: This module has been deprecated"))
+		) {
+			return;
+		}
+		originalWarn(...args);
+	};
+}
+
 interface ErrorBoundaryProps {
 	children: ReactNode;
 	fallback: ReactNode;
@@ -42,6 +58,9 @@ function PlaceholderModel() {
 
 function SafeModel() {
 	const gltf = useGLTF("/models/diriyah_palace_draco.glb", "/decoders/draco/");
+	if (!gltf || !gltf.scene) {
+		return <PlaceholderModel />;
+	}
 	return <primitive object={gltf.scene} />;
 }
 
