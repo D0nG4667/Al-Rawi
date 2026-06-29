@@ -14,13 +14,13 @@ We need to implement the core React and WebGL design patterns supporting our ext
 
 ### [Component Name] Frontend Architecture & Design Patterns
 
-#### [NEW] [ArtifactFactory.tsx](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/components/workspace/ArtifactFactory.tsx)
+#### [NEW] [ArtifactFactory.tsx](../../frontend/src/components/workspace/ArtifactFactory.tsx)
 Factory component utilizing conditional mappings to render various visual panels (mindmaps, audio, 3D hotspots, or PDF viewer widgets) depending on API response types.
 
-#### [MODIFY] [Scene.tsx](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/components/canvas/Scene.tsx)
+#### [MODIFY] [Scene.tsx](../../frontend/src/components/canvas/Scene.tsx)
 Integrate WebGL context recovery event listeners (`webglcontextlost` and `webglcontextrestored`) that swap elements with fallback UI warning cards.
 
-#### [NEW] [patterns-check.js](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/tests/patterns-check.js)
+#### [NEW] [patterns-check.js](../../frontend/src/tests/patterns-check.js)
 Unit test verifying that the `ArtifactFactory` correctly resolves components and handles dynamic element loading.
 
 ---

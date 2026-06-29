@@ -14,13 +14,13 @@ We need to implement a basic administrative dashboard route under `/admin` for h
 
 ### [Component Name] Administrative Portal UI
 
-#### [NEW] [TelemetryCard.tsx](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/components/admin/TelemetryCard.tsx)
+#### [NEW] [TelemetryCard.tsx](../../frontend/src/components/admin/TelemetryCard.tsx)
 Dashboard widget showcasing status latency, Sentry monitoring, and semantic cache hit indicators.
 
-#### [NEW] [page.tsx](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/app/[locale]/admin/page.tsx)
+#### [NEW] [page.tsx](../../frontend/src/app/[locale]/admin/page.tsx)
 Administrative workspace main page resolving active ingestion statistics.
 
-#### [NEW] [admin-check.js](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/tests/admin-check.js)
+#### [NEW] [admin-check.js](../../frontend/src/tests/admin-check.js)
 Unit test verifying layout container node properties and access validator functions.
 
 ---

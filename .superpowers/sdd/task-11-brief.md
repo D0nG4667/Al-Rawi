@@ -18,10 +18,10 @@ We need to implement API protection to limit requests to `/api/` endpoints (such
 
 ### [Component Name] Upstash Rate Limiting Proxy Setup
 
-#### [MODIFY] [proxy.ts](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/proxy.ts)
+#### [MODIFY] [proxy.ts](../../frontend/src/proxy.ts)
 Check incoming request pathnames. If the path matches `/api/chat` or `/api/request-document`, use Upstash Redis and Upstash Ratelimit to validate requests based on IP. If limited, return a `429` JSON response.
 
-#### [NEW] [ratelimit-check.js](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/tests/ratelimit-check.js)
+#### [NEW] [ratelimit-check.js](../../frontend/src/tests/ratelimit-check.js)
 Unit test script utilizing standard mock request/response contexts to verify the rate limiting logic under proxy.ts.
 
 ---

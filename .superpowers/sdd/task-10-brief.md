@@ -15,19 +15,19 @@ We need to implement seamless switching between English (LTR) and Arabic (RTL) l
 
 ### [Component Name] next-intl Core Infrastructure
 
-#### [NEW] [en.json](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/messages/en.json)
+#### [NEW] [en.json](../../frontend/messages/en.json)
 English localized strings mapping.
 
-#### [NEW] [ar.json](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/messages/ar.json)
+#### [NEW] [ar.json](../../frontend/messages/ar.json)
 Arabic localized strings mapping.
 
-#### [NEW] [i18n.ts](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/i18n/request.ts)
+#### [NEW] [i18n.ts](../../frontend/src/i18n/request.ts)
 Configuration loader to request current translation bundle based on context.
 
-#### [NEW] [middleware.ts](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/middleware.ts)
+#### [NEW] [middleware.ts](../../frontend/src/middleware.ts)
 Next.js middleware to inspect headers and route incoming requests under the active locale.
 
-#### [MODIFY] [layout.tsx](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/app/[locale]/layout.tsx)
+#### [MODIFY] [layout.tsx](../../frontend/src/app/[locale]/layout.tsx)
 Wrap layout using routing locale context, set `dir={locale === 'ar' ? 'rtl' : 'ltr'}` and `lang={locale}`.
 
 ---
