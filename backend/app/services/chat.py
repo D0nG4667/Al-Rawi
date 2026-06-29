@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_postgres.vectorstores import PGVector
 
-import app.main
 from app.core.config import get_settings
+from app.services.ingestion import get_tenant_collection_name
 
 COLLECTION_NAME = "al_rawi_documents"
 
@@ -21,6 +21,8 @@ def get_resilient_fallback_answer(query: str) -> str:
 
 async def get_semantic_cache(query: str) -> Optional[Dict[str, Any]]:
     """Checks if a matching query answers exists in the Upstash Redis cache."""
+    import app.main
+
     if not app.main.redis_client:
         return None
     norm_query = query.strip().lower()
@@ -39,6 +41,8 @@ async def get_semantic_cache(query: str) -> Optional[Dict[str, Any]]:
 
 async def set_semantic_cache(query: str, answer_data: Dict[str, Any]) -> None:
     """Stores query response payload in Upstash Redis cache (TTL: 1 hour)."""
+    import app.main
+
     if not app.main.redis_client:
         return
     norm_query = query.strip().lower()
@@ -51,12 +55,15 @@ async def set_semantic_cache(query: str, answer_data: Dict[str, Any]) -> None:
 
 
 async def retrieve_rag_context(
-    query: str, embeddings: GoogleGenerativeAIEmbeddings, database_url: str
+    query: str,
+    embeddings: GoogleGenerativeAIEmbeddings,
+    database_url: str,
+    collection_name: str,
 ) -> List[Dict[str, Any]]:
     """Retrieves document chunks matching the semantic query from Neon PostgreSQL."""
     vectorstore = PGVector(
         embeddings=embeddings,
-        collection_name=COLLECTION_NAME,
+        collection_name=collection_name,
         connection=database_url,
         use_jsonb=True,
     )
@@ -102,7 +109,10 @@ async def execute_chat_query(
     docs = []
     if settings.DATABASE_URL:
         try:
-            docs = await retrieve_rag_context(query, embeddings, settings.DATABASE_URL)
+            tenant_collection = get_tenant_collection_name(google_key)
+            docs = await retrieve_rag_context(
+                query, embeddings, settings.DATABASE_URL, tenant_collection
+            )
         except Exception as e_db:
             print(f"[-] Database vector retrieval error: {e_db}")
 
