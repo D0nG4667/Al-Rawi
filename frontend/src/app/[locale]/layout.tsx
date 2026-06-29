@@ -53,6 +53,7 @@ export default async function RootLayout({
 			lang={locale}
 			dir={direction}
 			className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+			suppressHydrationWarning
 		>
 			<body className="min-h-full flex flex-col bg-[#0B0C10] text-gray-200">
 				<NextIntlClientProvider messages={messages}>
