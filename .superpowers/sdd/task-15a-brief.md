@@ -14,13 +14,13 @@ We need to implement a premium cinematic landing page at `/` featuring GSAP entr
 
 ### [Component Name] Cinematic Landing Page & Personalizations
 
-#### [NEW] [PersonaSelector.tsx](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/components/ui/PersonaSelector.tsx)
+#### [NEW] [PersonaSelector.tsx](../../frontend/src/components/ui/PersonaSelector.tsx)
 A selector allowing users to switch between Storyteller and Academic guides.
 
-#### [NEW] [useGeofence.ts](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/hooks/useGeofence.ts)
+#### [NEW] [useGeofence.ts](../../frontend/src/hooks/useGeofence.ts)
 A React hook resolving the browser's geolocation to trigger spatial camera refocusing when entering specific historical geofenced boundaries.
 
-#### [NEW] [landing-check.js](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/tests/landing-check.js)
+#### [NEW] [landing-check.js](../../frontend/src/tests/landing-check.js)
 Unit test verifying geofencing boundary math and persona selection updates.
 
 ---

@@ -14,13 +14,13 @@ We need to add offline PWA capabilities to Al-Rawi using `@ducanh2912/next-pwa`.
 
 ### [Component Name] Progressive Web App Core Setup
 
-#### [NEW] [manifest.json](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/public/manifest.json)
+#### [NEW] [manifest.json](../../frontend/public/manifest.json)
 PWA application manifest containing name, short_name, descriptions, themes, and icon paths.
 
-#### [MODIFY] [next.config.ts](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/next.config.ts)
+#### [MODIFY] [next.config.ts](../../frontend/next.config.ts)
 Wrap our existing Next.js config with the PWA plugin configured to build in production and cache static models.
 
-#### [NEW] [pwa-check.js](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/tests/pwa-check.js)
+#### [NEW] [pwa-check.js](../../frontend/src/tests/pwa-check.js)
 Unit test script checking manifest existence and JSON integrity.
 
 ---

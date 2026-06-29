@@ -16,10 +16,10 @@ We need to set up a dynamic ImageResponse API endpoint under `/api/og` using `@v
 
 ### [Component Name] Dynamic Open Graph Image Generator
 
-#### [NEW] [route.tsx](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/app/api/og/route.tsx)
+#### [NEW] [route.tsx](../../frontend/src/app/api/og/route.tsx)
 An API endpoint rendering an SVG canvas wrapped in Next.js' `ImageResponse` to produce clean PNG images dynamically based on URL query params.
 
-#### [NEW] [og-check.js](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/tests/og-check.js)
+#### [NEW] [og-check.js](../../frontend/src/tests/og-check.js)
 Unit test script making sure the `ImageResponse` constructs cleanly and returns standard headers.
 
 ---

@@ -13,10 +13,10 @@ We need to create the primary onboarding document `frontend/README.md` covering 
 
 ### [Component Name] Documentation Assets
 
-#### [NEW] [README.md](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/README.md)
+#### [NEW] [README.md](../../frontend/README.md)
 Onboarding guide mapping our frontend workspace architecture, patterns, build scripts, environment settings, and licensing data.
 
-#### [NEW] [readme-check.js](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/tests/readme-check.js)
+#### [NEW] [readme-check.js](../../frontend/src/tests/readme-check.js)
 Unit check verifying documentation existence.
 
 ---

@@ -17,13 +17,13 @@ We need to implement a glassmorphic "Request Document" input form where users ca
 
 ### [Component Name] Ingestion Request Form UI
 
-#### [NEW] [DocumentRequestForm.tsx](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/components/ui/DocumentRequestForm.tsx)
+#### [NEW] [DocumentRequestForm.tsx](../../frontend/src/components/ui/DocumentRequestForm.tsx)
 A glassmorphic form component containing an input field, submit state loaders, validation indicators, and feedback messages.
 
-#### [MODIFY] [page.tsx](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/app/[locale]/page.tsx)
+#### [MODIFY] [page.tsx](../../frontend/src/app/[locale]/page.tsx)
 Render the new `DocumentRequestForm` component inside the Left panel (Archive Ingestion section) to replace the static drag-and-drop skeleton.
 
-#### [NEW] [form-check.js](file:///c:/Users/hp/Desktop/gab/git%20projects/Al-Rawi/frontend/src/tests/form-check.js)
+#### [NEW] [form-check.js](../../frontend/src/tests/form-check.js)
 Unit test script asserting input validation rules and submission callback payload formats.
 
 ---
