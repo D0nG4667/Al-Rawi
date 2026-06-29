@@ -1,20 +1,50 @@
-### Task 3: Setup Global Styles & Glassmorphism Theme
+### Task 3: Configure Frontend Folder IDE Editor Settings
 
 **Files:**
-- Modify: `frontend/src/app/globals.css`
+- Create: `frontend/.vscode/settings.json`
 
 **Interfaces:**
-- Produces: CSS rules mapping `--background` to `#0B0C10` (ambient dark) and setting up `.glass-panel` utilities.
+- Consumes: `@biomejs/biome` inside `frontend/node_modules`.
+- Produces: Folder-level formatting and auto-fixing configuration when opened directly.
 
-- [ ] **Step 1: Update globals.css to use #0B0C10 background and glassmorphism rules**
-*(Agent instruction: Update `frontend/src/app/globals.css` with the Tailwind v4 compatible structure:
-1. Define `--background` to `220 18% 5%` and `--foreground` to `210 40% 98%`.
-2. Configure `@theme inline` mapping `--color-background` and `--color-foreground` using `hsl()`.
-3. Apply background/color styles to body, along with overflow-x hidden.
-4. Implement `.glass-panel` styling with backdrop-blur.)*
+- [ ] **Step 1: Create folder-level settings file**
 
-- [ ] **Step 2: Commit**
+Create the file `frontend/.vscode/settings.json` inside the frontend directory.
+
+```json
+{
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit",
+    "source.fixAll.biome": "explicit"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "biome.lsp.bin": "${workspaceFolder}/node_modules/@biomejs/biome/bin/biome"
+}
+```
+
+- [ ] **Step 2: Commit settings**
+
+Run:
 ```bash
-git add frontend/src/app/globals.css
-git commit -m "style: configure global dark theme and glassmorphism"
+git add frontend/.vscode/settings.json
+git commit -m "chore: add frontend-folder VS Code settings for Biome integration"
 ```
