@@ -2,6 +2,7 @@ import hashlib
 import json
 from typing import Any, Dict, List, Optional
 
+from langchain_core.documents import Document
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_postgres.vectorstores import PGVector
 
@@ -9,6 +10,12 @@ from app.core.config import get_settings
 from app.services.ingestion import get_tenant_collection_name
 
 COLLECTION_NAME = "al_rawi_documents"
+
+
+def get_tenant_cache_collection(api_key: str) -> str:
+    """Generates a secure, deterministic cache collection name based on the tenant API key."""
+    api_key_hash = hashlib.sha256(api_key.strip().encode("utf-8")).hexdigest()
+    return f"cache_tenant_{api_key_hash[:16]}"
 
 
 def get_resilient_fallback_answer(query: str) -> str:
@@ -19,39 +26,62 @@ def get_resilient_fallback_answer(query: str) -> str:
     )
 
 
-async def get_semantic_cache(query: str) -> Optional[Dict[str, Any]]:
-    """Checks if a matching query answers exists in the Upstash Redis cache."""
-    import app.main
-
-    if not app.main.redis_client:
+async def get_semantic_cache(
+    query: str,
+    embeddings: GoogleGenerativeAIEmbeddings,
+    database_url: str,
+    collection_name: str,
+) -> Optional[Dict[str, Any]]:
+    """Checks if a highly similar query answer exists in the PGVector semantic cache."""
+    if not database_url:
         return None
-    norm_query = query.strip().lower()
-    query_hash = hashlib.sha256(norm_query.encode("utf-8")).hexdigest()
-    cache_key = f"semantic_cache:{query_hash}"
     try:
-        cached_val = await app.main.redis_client.get(cache_key)
-        if cached_val:
-            data = json.loads(cached_val)
-            data["cached"] = True
-            return data
+        vectorstore = PGVector(
+            embeddings=embeddings,
+            collection_name=collection_name,
+            connection=database_url,
+            use_jsonb=True,
+        )
+        results = vectorstore.similarity_search_with_score(query, k=1)
+        if results:
+            doc, score = results[0]
+            # Cosine distance: <= 0.08 indicates highly similar query
+            if score <= 0.08:
+                data = json.loads(doc.metadata["response_data"])
+                data["cached"] = True
+                return data
     except Exception as e:
-        print(f"[-] Redis cache lookup error: {e}")
+        print(f"[-] Semantic cache lookup error: {e}")
     return None
 
 
-async def set_semantic_cache(query: str, answer_data: Dict[str, Any]) -> None:
-    """Stores query response payload in Upstash Redis cache (TTL: 1 hour)."""
-    import app.main
-
-    if not app.main.redis_client:
+async def set_semantic_cache(
+    query: str,
+    answer_data: Dict[str, Any],
+    embeddings: GoogleGenerativeAIEmbeddings,
+    database_url: str,
+    collection_name: str,
+) -> None:
+    """Stores query response payload in the PGVector semantic cache."""
+    if not database_url:
         return
-    norm_query = query.strip().lower()
-    query_hash = hashlib.sha256(norm_query.encode("utf-8")).hexdigest()
-    cache_key = f"semantic_cache:{query_hash}"
     try:
-        await app.main.redis_client.set(cache_key, json.dumps(answer_data), ex=3600)
+        vectorstore = PGVector(
+            embeddings=embeddings,
+            collection_name=collection_name,
+            connection=database_url,
+            use_jsonb=True,
+        )
+        cache_payload = dict(answer_data)
+        cache_payload["cached"] = True
+
+        doc = Document(
+            page_content=query,
+            metadata={"response_data": json.dumps(cache_payload)},
+        )
+        vectorstore.add_documents([doc])
     except Exception as e:
-        print(f"[-] Redis cache store error: {e}")
+        print(f"[-] Semantic cache store error: {e}")
 
 
 async def retrieve_rag_context(
@@ -94,16 +124,19 @@ async def execute_chat_query(
     """Processes RAG queries using semantic caching, vector retrieval, and model failovers."""
     settings = get_settings()
 
-    # 1. Semantic Cache Lookup
-    cached_response = await get_semantic_cache(query)
-    if cached_response:
-        return cached_response
-
-    # 2. Setup Embeddings Model
+    # 1. Setup Embeddings Model
     google_key = api_key or settings.GOOGLE_API_KEY
     embeddings = GoogleGenerativeAIEmbeddings(
         model="models/text-embedding-004", google_api_key=google_key
     )
+
+    # 2. Semantic Cache Lookup
+    tenant_cache_collection = get_tenant_cache_collection(google_key)
+    cached_response = await get_semantic_cache(
+        query, embeddings, settings.DATABASE_URL, tenant_cache_collection
+    )
+    if cached_response:
+        return cached_response
 
     # 3. Vector Database Retrieval
     docs = []
@@ -181,6 +214,12 @@ async def execute_chat_query(
     }
 
     # 7. Update cache
-    await set_semantic_cache(query, response_payload)
+    await set_semantic_cache(
+        query,
+        response_payload,
+        embeddings,
+        settings.DATABASE_URL,
+        tenant_cache_collection,
+    )
 
     return response_payload

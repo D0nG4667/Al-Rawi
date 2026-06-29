@@ -1,4 +1,3 @@
-import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -35,8 +34,8 @@ def test_context_compression():
 
 
 @pytest.mark.anyio
-@patch("app.main.redis_client")
-async def test_semantic_cache_hit(mock_redis):
+@patch("app.services.chat.get_semantic_cache")
+async def test_semantic_cache_hit(mock_get_cache):
     """Verify that matching cached queries bypass retrievals and LLM invocations."""
     cached_payload = {
         "answer": "At-Turaif is located in Diriyah.",
@@ -44,15 +43,14 @@ async def test_semantic_cache_hit(mock_redis):
         "model_used": "Cache",
         "cached": True,
     }
-    # Mock redis get to return the cached JSON string
-    mock_redis.get = AsyncMock(return_value=json.dumps(cached_payload))
+    mock_get_cache.return_value = cached_payload
 
     # Invoke query
     result = await execute_chat_query(query="Where is At-Turaif?")
 
     assert result["cached"] is True
     assert result["answer"] == "At-Turaif is located in Diriyah."
-    mock_redis.get.assert_called_once()
+    mock_get_cache.assert_called_once()
 
 
 @pytest.mark.anyio
