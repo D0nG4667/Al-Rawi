@@ -1,7 +1,8 @@
 import os
+from typing import BinaryIO
+
 import boto3
 from botocore.config import Config
-from typing import BinaryIO
 
 # Load R2 Environment Configurations
 CLOUDFLARE_R2_ACCOUNT_ID = os.getenv("CLOUDFLARE_R2_ACCOUNT_ID")
