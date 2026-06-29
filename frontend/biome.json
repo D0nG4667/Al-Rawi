@@ -24,16 +24,17 @@
 		}
 	},
 	"assist": {
-		"enabled": true,
 		"actions": {
 			"source": {
-				"organizeImports": "on"
+				"organizeImports": {
+					"level": "on"
+				}
 			}
 		}
 	},
 	"overrides": [
 		{
-			"includes": ["public/**/*", "src/app/globals.css"],
+			"includes": ["**/public/**/*", "**/src/app/globals.css"],
 			"linter": {
 				"enabled": false
 			},
