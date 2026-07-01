@@ -54,5 +54,6 @@
 - [x] Task 20: Setup Enterprise Observability (Sentry, Structlog, LangSmith) (commits b74d4c3..merge, review clean)
 - [x] Task 21: Semantic Caching (Latency Optimization) (commits 19638b1..merge, review clean)
 - [x] Task 22: AI Safety & Guardrails (commits 970d557..merge, review clean)
+- [x] Task 23: Public Document Request Endpoint (commits a493573..merge, review clean)
 
 
