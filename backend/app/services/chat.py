@@ -7,6 +7,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_postgres.vectorstores import PGVector
 
 from app.core.config import get_settings
+from app.services.guardrails import check_query_safety
 from app.services.ingestion import get_tenant_collection_name
 
 COLLECTION_NAME = "al_rawi_documents"
@@ -122,6 +123,16 @@ async def execute_chat_query(
     query: str, api_key: Optional[str] = None
 ) -> Dict[str, Any]:
     """Processes RAG queries using semantic caching, vector retrieval, and model failovers."""
+    # 0. Safety Guardrail Check
+    is_safe, response_text = await check_query_safety(query, api_key)
+    if not is_safe:
+        return {
+            "answer": response_text,
+            "sources": [],
+            "model_used": "Guardrails",
+            "cached": False,
+        }
+
     settings = get_settings()
 
     # 1. Setup Embeddings Model
