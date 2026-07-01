@@ -15,14 +15,16 @@ def test_tenant_cache_collection_derivation():
 
 
 @pytest.mark.anyio
+@patch("app.services.chat.check_query_safety")
 @patch("app.services.chat.get_settings")
 @patch("app.services.chat.PGVector")
 @patch("app.services.chat.retrieve_rag_context")
 @patch("langchain_google_genai.ChatGoogleGenerativeAI")
 async def test_semantic_cache_miss_and_populate(
-    mock_gemini, mock_retrieve, mock_vectorstore, mock_settings
+    mock_gemini, mock_retrieve, mock_vectorstore, mock_settings, mock_safety
 ):
     """Verify that a cache miss triggers vector search, LLM completion, and cache insert."""
+    mock_safety.return_value = (True, "Where is Al-Hijr?")
     mock_settings.return_value.DATABASE_URL = "postgresql://localhost/mock"
     mock_settings.return_value.GOOGLE_API_KEY = "mock-key"
 
@@ -53,14 +55,16 @@ async def test_semantic_cache_miss_and_populate(
 
 
 @pytest.mark.anyio
+@patch("app.services.chat.check_query_safety")
 @patch("app.services.chat.get_settings")
 @patch("app.services.chat.PGVector")
 @patch("app.services.chat.retrieve_rag_context")
 @patch("langchain_google_genai.ChatGoogleGenerativeAI")
 async def test_semantic_cache_hit(
-    mock_gemini, mock_retrieve, mock_vectorstore, mock_settings
+    mock_gemini, mock_retrieve, mock_vectorstore, mock_settings, mock_safety
 ):
     """Verify that a similar query (cosine distance <= 0.08) hits the semantic cache."""
+    mock_safety.return_value = (True, "Tell me about Al-Hijr")
     mock_settings.return_value.DATABASE_URL = "postgresql://localhost/mock"
     mock_settings.return_value.GOOGLE_API_KEY = "mock-key"
 
