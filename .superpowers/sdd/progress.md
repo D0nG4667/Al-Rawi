@@ -57,5 +57,6 @@
 - [x] Task 23: Public Document Request Endpoint (commits a493573..merge, review clean)
 - [x] Task 24: RAGAS & LangSmith Evaluation Test Suite (commits dd7919e..merge, review clean)
 - [x] Task 25: Admin Control & Telemetry REST APIs (commits 3c466ff..merge, review clean)
+- [x] Task 26: Write Comprehensive Backend Documentation (README.md) (commits 6b31fd8..merge, review clean)
 
 
