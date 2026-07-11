@@ -58,7 +58,7 @@ function PlaceholderModel() {
 
 function SafeModel() {
 	const gltf = useGLTF("/models/diriyah_palace_draco.glb", "/decoders/draco/");
-	if (!gltf || !gltf.scene) {
+	if (!gltf?.scene) {
 		return <PlaceholderModel />;
 	}
 	return <primitive object={gltf.scene} />;
