@@ -2,6 +2,12 @@
 
 import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
+import {
+	EffectComposer,
+	Bloom,
+	Noise,
+	Vignette,
+} from "@react-three/postprocessing";
 import React, { Component, Suspense, type ReactNode } from "react";
 import * as THREE from "three";
 
@@ -134,6 +140,18 @@ export default function Scene({ audioAnalyser }: SceneProps) {
 					<ErrorBoundary fallback={<PlaceholderModel />}>
 						<SafeModel audioAnalyser={audioAnalyser} />
 					</ErrorBoundary>
+
+					{/* Cinematic Post-Processing Effects */}
+					<EffectComposer>
+						<Bloom
+							luminanceThreshold={0.2}
+							luminanceSmoothing={0.9}
+							height={300}
+							intensity={1.2}
+						/>
+						<Noise opacity={0.015} />
+						<Vignette eskil={false} offset={0.05} darkness={1.05} />
+					</EffectComposer>
 
 					<OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.5} />
 				</Suspense>
