@@ -1,4 +1,3 @@
-import Scene from "@/components/canvas/Scene";
 import SupportButton from "@/components/ui/SupportButton";
 import ExploreDashboard from "@/components/ui/ExploreDashboard";
 
@@ -11,7 +10,6 @@ export default async function Home({
 
 	return (
 		<main className="relative min-h-[200vh]">
-			<Scene />
 			<SupportButton />
 			<ExploreDashboard locale={locale} />
 		</main>
