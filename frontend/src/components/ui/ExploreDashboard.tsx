@@ -1,11 +1,15 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { type KeyboardEvent, useRef, useState } from "react";
+import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import DocumentRequestForm from "./DocumentRequestForm";
 import PersonaSelector from "./PersonaSelector";
 import MindMap from "./MindMap";
 import Scene from "@/components/canvas/Scene";
+import ThinkingStep from "@/components/chat/ThinkingStep";
+import CitationDrawer from "@/components/chat/CitationDrawer";
+import VoiceInput from "@/components/chat/VoiceInput";
+import { useSoundDesign } from "@/hooks/useSoundDesign";
 import {
 	MessageSquare,
 	Send,
@@ -18,6 +22,7 @@ import {
 	Plus,
 	X,
 	AudioLines,
+	FileText,
 } from "lucide-react";
 
 interface ExploreDashboardProps {
@@ -45,9 +50,30 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 	// Chat states
 	const [chatInput, setChatInput] = useState("");
 	const [chatHistory, setChatHistory] = useState<
-		Array<{ id: string; role: "user" | "oracle"; text: string }>
+		Array<{
+			id: string;
+			role: "user" | "oracle";
+			text: string;
+			sources?: Array<{
+				id: string;
+				metadata?: Record<string, unknown>;
+				snippet?: string;
+			}>;
+		}>
 	>([]);
 	const [isThinking, setIsThinking] = useState(false);
+	const [activeQuery, setActiveQuery] = useState("");
+
+	// Citation States
+	const [activeCitation, setActiveCitation] = useState<{
+		title: string;
+		content: string;
+		page?: string | number;
+	} | null>(null);
+	const [isCitationOpen, setIsCitationOpen] = useState(false);
+
+	// UI Sound Design
+	const { playClick, playWhoosh, playChime } = useSoundDesign();
 
 	// Majlis/Audio states
 	const [isMajlisDrafting, setIsMajlisDrafting] = useState(false);
@@ -60,14 +86,28 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const audioCtxRef = useRef<AudioContext | null>(null);
 
+	// Preloader State
+	const [isPreloading, setIsPreloading] = useState(true);
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setIsPreloading(false);
+		}, 1800);
+		return () => clearTimeout(timer);
+	}, []);
+
 	const switchLocale = locale === "en" ? "ar" : "en";
 	const switchLabel = locale === "en" ? "العربية" : "English";
 
-	const handleSendChat = async () => {
-		const query = chatInput.trim();
+	const handleSendChat = async (directText?: string) => {
+		const query = (
+			typeof directText === "string" ? directText : chatInput
+		).trim();
 		if (!query) return;
 
+		playClick();
 		setChatInput("");
+		setActiveQuery(query);
 		setChatHistory((prev) => [
 			...prev,
 			{ id: `user-${Date.now()}`, role: "user", text: query },
@@ -88,14 +128,25 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 			}
 
 			const data = await res.json();
+			const mappedSources = (data.sources || []).map(
+				(
+					src: { metadata?: Record<string, unknown>; snippet?: string },
+					i: number,
+				) => ({
+					...src,
+					id: `src-${i}-${Date.now()}`,
+				}),
+			);
 			setChatHistory((prev) => [
 				...prev,
 				{
 					id: `oracle-${Date.now()}`,
 					role: "oracle",
 					text: data.answer || "I could not resolve that.",
+					sources: mappedSources,
 				},
 			]);
+			playChime();
 		} catch (error: unknown) {
 			const errorMessage =
 				error instanceof Error ? error.message : "Connection failed.";
@@ -121,7 +172,9 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 	// --- Majlis Storytelling Handlers ---
 
 	const handleSummonMajlis = async () => {
+		playClick();
 		setIsMajlisOpen(true);
+		playWhoosh();
 		setIsMajlisDrafting(true);
 		setMajlisScript(null);
 		stopAudio();
@@ -299,13 +352,37 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 	};
 
 	const handleCloseMajlis = () => {
+		playClick();
 		stopAudio();
 		setIsMajlisOpen(false);
+		playWhoosh();
 		setMajlisScript(null);
 	};
 
 	return (
 		<>
+			{/* Cinematic Entry Preloader */}
+			{isPreloading && (
+				<div className="fixed inset-0 z-50 bg-[#0B0C10] flex flex-col items-center justify-center text-white select-none pointer-events-auto">
+					<div className="flex flex-col items-center gap-6 animate-pulse">
+						<div className="w-16 h-16 rounded-full border-2 border-amber-500/25 border-t-amber-400 animate-spin flex items-center justify-center shadow-[0_0_24px_rgba(245,158,11,0.2)]">
+							<Sparkles className="w-6 h-6 text-amber-300" />
+						</div>
+						<div className="text-center space-y-2">
+							<h1 className="text-2xl font-bold tracking-[0.2em] uppercase text-amber-300">
+								الراوي • AL-RAWI
+							</h1>
+							<p className="text-xs opacity-50 tracking-wider">
+								Saudi Heritage & Tourism AI Oracle
+							</p>
+						</div>
+					</div>
+					<div className="absolute bottom-10 text-[10px] opacity-40 uppercase tracking-[0.15em] font-mono">
+						Initializing 3D Workspace Engine
+					</div>
+				</div>
+			)}
+
 			{/* fixed backgrounds & Canvas */}
 			<Scene audioAnalyser={audioAnalyser} />
 
@@ -372,7 +449,11 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 					<div className="flex-1 flex items-end justify-center pb-12 gap-4 pointer-events-auto">
 						<button
 							type="button"
-							onClick={() => setIsMapOpen(true)}
+							onClick={() => {
+								playClick();
+								setIsMapOpen(true);
+								playWhoosh();
+							}}
 							className="bg-white/10 text-white px-8 py-3.5 rounded-full backdrop-blur-md border border-white/25 hover:bg-white/20 hover:scale-105 active:scale-95 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.4)] cursor-pointer"
 						>
 							{t("Dashboard.viewMap")}
@@ -388,7 +469,7 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 					</div>
 
 					{/* Right panel: Agentic Chat */}
-					<aside className="w-96 glass-panel p-5 pointer-events-auto flex flex-col gap-4">
+					<aside className="w-96 glass-panel p-5 pointer-events-auto flex flex-col gap-4 relative">
 						<h2 className="font-semibold text-lg border-b border-white/10 pb-2 flex items-center gap-2">
 							<MessageSquare className="w-4 h-4" />
 							Oracle Guide
@@ -411,27 +492,56 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 										<span className="text-[10px] opacity-40 uppercase tracking-wider mb-0.5">
 											{msg.role === "user" ? "You" : "Al-Rawi"}
 										</span>
-										<span
+										<div
 											className={`inline-block px-3.5 py-2 rounded-2xl max-w-[85%] leading-relaxed ${
 												msg.role === "user"
 													? "bg-white/10 border border-white/10"
 													: "bg-black/40 border border-white/5"
 											}`}
 										>
-											{msg.text}
-										</span>
+											<p>{msg.text}</p>
+											{msg.role === "oracle" &&
+												msg.sources &&
+												msg.sources.length > 0 && (
+													<div className="flex gap-1.5 mt-2 flex-wrap">
+														{msg.sources.map((src, idx) => (
+															<button
+																key={src.id}
+																type="button"
+																onClick={() => {
+																	playClick();
+																	setActiveCitation({
+																		title:
+																			typeof src.metadata?.source === "string"
+																				? src.metadata.source
+																				: "UNESCO Archives Reference",
+																		content: src.snippet || "",
+																		page:
+																			typeof src.metadata?.page === "string" ||
+																			typeof src.metadata?.page === "number"
+																				? src.metadata.page
+																				: undefined,
+																	});
+																	setIsCitationOpen(true);
+																	playWhoosh();
+																}}
+																className="text-[9px] bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded px-2 py-0.5 hover:bg-amber-500/25 transition-all flex items-center gap-1 cursor-pointer font-semibold uppercase"
+															>
+																<FileText className="w-2.5 h-2.5" />
+																Source [{idx + 1}]
+															</button>
+														))}
+													</div>
+												)}
+										</div>
 									</div>
 								))
 							)}
 
-							{isThinking && (
-								<div className="flex items-center gap-2 text-xs opacity-60">
-									<span className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" />
-									<span className="w-1.5 h-1.5 rounded-full bg-white animate-bounce [animation-delay:0.2s]" />
-									<span className="w-1.5 h-1.5 rounded-full bg-white animate-bounce [animation-delay:0.4s]" />
-									<span>Oracle is contemplating...</span>
-								</div>
-							)}
+							<ThinkingStep
+								isThinking={isThinking}
+								currentQuery={activeQuery}
+							/>
 						</div>
 
 						<div className="border-t border-white/10 pt-3">
@@ -439,34 +549,55 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 						</div>
 
 						{/* Chat Input Container */}
-						<div className="relative flex items-center">
-							<input
-								type="text"
-								value={chatInput}
-								onChange={(e) => setChatInput(e.target.value)}
-								onKeyDown={handleKeyPress}
+						<div className="flex gap-2 items-center">
+							<div className="relative flex-1 flex items-center">
+								<input
+									type="text"
+									value={chatInput}
+									onChange={(e) => setChatInput(e.target.value)}
+									onKeyDown={handleKeyPress}
+									disabled={isThinking}
+									placeholder={t("Dashboard.chatPlaceholder")}
+									className="bg-black/50 border border-white/15 rounded-lg pl-4 pr-12 py-2.5 w-full text-sm outline-none focus:border-white/30 transition-colors disabled:opacity-50 text-white"
+								/>
+								<button
+									type="button"
+									onClick={() => handleSendChat()}
+									disabled={isThinking || !chatInput.trim()}
+									className="absolute right-2.5 p-1.5 rounded-md hover:bg-white/10 transition-colors disabled:opacity-30 cursor-pointer"
+								>
+									<Send className="w-4 h-4 text-white" />
+								</button>
+							</div>
+							<VoiceInput
+								onTranscript={(text) => handleSendChat(text)}
 								disabled={isThinking}
-								placeholder={t("Dashboard.chatPlaceholder")}
-								className="bg-black/50 border border-white/15 rounded-lg pl-4 pr-12 py-2.5 w-full text-sm outline-none focus:border-white/30 transition-colors disabled:opacity-50"
 							/>
-							<button
-								type="button"
-								onClick={handleSendChat}
-								disabled={isThinking || !chatInput.trim()}
-								className="absolute right-2.5 p-1.5 rounded-md hover:bg-white/10 transition-colors disabled:opacity-30 cursor-pointer"
-							>
-								<Send className="w-4 h-4 text-white" />
-							</button>
 						</div>
 					</aside>
 				</div>
 			</div>
 
+			{/* Interactive Citations Drawer */}
+			<CitationDrawer
+				isOpen={isCitationOpen}
+				citation={activeCitation}
+				onClose={() => {
+					playClick();
+					setIsCitationOpen(false);
+					playWhoosh();
+				}}
+			/>
+
 			{/* Interactive Mind Map Canvas Overlay */}
 			{isMapOpen && (
 				<MindMap
 					query={chatHistory[chatHistory.length - 1]?.text}
-					onClose={() => setIsMapOpen(false)}
+					onClose={() => {
+						playClick();
+						setIsMapOpen(false);
+						playWhoosh();
+					}}
 				/>
 			)}
 
