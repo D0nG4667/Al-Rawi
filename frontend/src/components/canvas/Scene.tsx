@@ -1,8 +1,9 @@
 "use client";
 
 import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import React, { Component, Suspense, type ReactNode } from "react";
+import * as THREE from "three";
 
 // Filter out THREE.Clock deprecation warnings triggered by react-three-fiber under the hood
 if (typeof window !== "undefined") {
@@ -56,15 +57,44 @@ function PlaceholderModel() {
 	);
 }
 
-function SafeModel() {
+function SafeModel({ audioAnalyser }: { audioAnalyser: AnalyserNode | null }) {
 	const gltf = useGLTF("/models/diriyah_palace_draco.glb", "/decoders/draco/");
+	const groupRef = React.useRef<THREE.Group>(null);
+	const dataArray = React.useMemo(() => {
+		return audioAnalyser
+			? new Uint8Array(audioAnalyser.frequencyBinCount)
+			: null;
+	}, [audioAnalyser]);
+
+	useFrame(() => {
+		if (audioAnalyser && dataArray && groupRef.current) {
+			audioAnalyser.getByteFrequencyData(dataArray);
+			const average =
+				dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
+			// Scale the palace scene object between 1.0x and 1.15x based on frequency volume peaks
+			const scale = 1 + (average / 255) * 0.15;
+			groupRef.current.scale.lerp(new THREE.Vector3(scale, scale, scale), 0.15);
+		} else if (groupRef.current) {
+			// Return to baseline scale smoothly
+			groupRef.current.scale.lerp(new THREE.Vector3(1, 1, 1), 0.15);
+		}
+	});
+
 	if (!gltf?.scene) {
 		return <PlaceholderModel />;
 	}
-	return <primitive object={gltf.scene} />;
+	return (
+		<group ref={groupRef}>
+			<primitive object={gltf.scene} />
+		</group>
+	);
 }
 
-export default function Scene() {
+interface SceneProps {
+	audioAnalyser: AnalyserNode | null;
+}
+
+export default function Scene({ audioAnalyser }: SceneProps) {
 	const [contextLost, setContextLost] = React.useState(false);
 
 	return (
@@ -102,7 +132,7 @@ export default function Scene() {
 
 					{/* High-Poly Model */}
 					<ErrorBoundary fallback={<PlaceholderModel />}>
-						<SafeModel />
+						<SafeModel audioAnalyser={audioAnalyser} />
 					</ErrorBoundary>
 
 					<OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.5} />
