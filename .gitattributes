@@ -1,0 +1,26 @@
+# Normalize all text files to LF in the repository and working tree.
+* text=auto eol=lf
+
+# Windows-native scripts keep CRLF
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binary assets (never diff or convert)
+*.glb binary
+*.gltf -text
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.mp3 binary
+*.wav binary
+
+# Lockfiles: treat as generated in diffs and GitHub language stats
+pnpm-lock.yaml linguist-generated=true -diff
+uv.lock linguist-generated=true -diff
