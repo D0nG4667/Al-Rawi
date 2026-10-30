@@ -1,28 +1,51 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
-import "../globals.css";
+import {
+	Fraunces,
+	IBM_Plex_Mono,
+	IBM_Plex_Sans_Arabic,
+	Reem_Kufi,
+} from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
+import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
+import ThemeProvider from "@/components/providers/ThemeProvider";
+import "../globals.css";
 
-const geistSans = Geist({
-	variable: "--font-geist-sans",
+const fraunces = Fraunces({
+	variable: "--font-fraunces",
 	subsets: ["latin"],
+	display: "swap",
 });
 
-const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
+const reemKufi = Reem_Kufi({
+	variable: "--font-reem-kufi",
+	subsets: ["arabic", "latin"],
+	weight: ["500", "600", "700"],
+	display: "swap",
+});
+
+const plexArabic = IBM_Plex_Sans_Arabic({
+	variable: "--font-plex-arabic",
+	subsets: ["arabic", "latin"],
+	weight: ["300", "400", "500", "600", "700"],
+	display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+	variable: "--font-plex-mono",
 	subsets: ["latin"],
+	weight: ["400", "500", "600"],
+	display: "swap",
 });
 
 export const metadata: Metadata = {
-	title: "Al-Rawi - Heritage & Tourism",
+	title: "Al-Rawi · الراوي — Saudi Heritage & AI Oracle",
 	description:
-		"Preserving and exploring historical architectures in Saudi Arabia",
+		"Illuminated spatial archive and AI Oracle for Saudi Arabia's UNESCO World Heritage Sites in Ad-Dir'iyah, AlUla, and Historic Jeddah.",
 };
 
-export function generateStaticParams() {
+export function generateStaticParams(): Array<{ locale: string }> {
 	return [{ locale: "en" }, { locale: "ar" }];
 }
 
@@ -32,7 +55,7 @@ export default async function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 	params: Promise<{ locale: string }>;
-}>) {
+}>): Promise<React.ReactElement> {
 	const { locale } = await params;
 
 	// Validate that the incoming locale is supported
@@ -52,15 +75,18 @@ export default async function RootLayout({
 		<html
 			lang={locale}
 			dir={direction}
-			className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+			data-theme="night"
+			className={`${fraunces.variable} ${reemKufi.variable} ${plexArabic.variable} ${plexMono.variable} h-full antialiased`}
 			suppressHydrationWarning
 		>
 			<body
-				className="min-h-full flex flex-col bg-[#0B0C10] text-gray-200"
+				className="min-h-full flex flex-col bg-[var(--bg-canvas)] text-[var(--text-primary)]"
 				suppressHydrationWarning
 			>
 				<NextIntlClientProvider messages={messages}>
-					<SmoothScrollProvider>{children}</SmoothScrollProvider>
+					<ThemeProvider>
+						<SmoothScrollProvider>{children}</SmoothScrollProvider>
+					</ThemeProvider>
 				</NextIntlClientProvider>
 			</body>
 		</html>

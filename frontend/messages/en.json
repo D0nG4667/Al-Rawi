@@ -2,15 +2,30 @@
 	"Common": {
 		"title": "Al-Rawi",
 		"subtitle": "Saudi Architectural Heritage & AI Oracle",
-		"tagline": "Ingest historical maps, UNESCO archives, and ask our AI Oracle about Al-Ula, Diriyah, and beyond."
+		"tagline": "Ingest historical maps, UNESCO archives, and ask our AI Oracle about AlUla, Ad-Dir'iyah, and Historic Jeddah.",
+		"oracleStatus": "Gemini 2.5 Oracle Active",
+		"themeNight": "Desert Night",
+		"themeSandstone": "Sunlit Sandstone",
+		"apiKeyLabel": "BYOK Gemini Key"
 	},
 	"Dashboard": {
 		"uploadTitle": "Ingest Heritage Documents",
 		"uploadDropzone": "Drag and drop historical PDFs, UNESCO dossiers, or archaeological reports",
 		"uploadButton": "Select PDF File",
 		"unsupportedFile": "Only PDF documents are supported.",
-		"viewMap": "Explore Heritage Map",
+		"viewMap": "Knowledge Graph",
 		"supportUs": "Support Al-Rawi",
-		"chatPlaceholder": "Ask Al-Rawi Oracle about Saudi heritage..."
+		"chatPlaceholder": "Ask Al-Rawi Oracle about Saudi heritage (Cmd/Ctrl + K)...",
+		"archiveTrigger": "Archive Dossiers",
+		"oracleTrigger": "Oracle Chronicle",
+		"majlisTrigger": "Summon the Majlis",
+		"personaStoryteller": "Al-Rawi · Storyteller",
+		"personaAcademic": "Al-Muhaqqiq · Scholar",
+		"curatedDossiersTitle": "Indexed UNESCO & RCU Dossiers",
+		"customIngestionTitle": "Ingest Custom PDF Scroll",
+		"emptyChronicleTitle": "The Illuminated Chronicle Awaits",
+		"emptyChronicleBody": "Select a UNESCO site in the top bar or choose an inquiry below to consult primary archaeological and historical records.",
+		"verifiedSources": "Verified Archival Citations",
+		"keyboardHint": "Press [ for Archive · ] for Chronicle · Esc for Pure Canvas"
 	}
 }

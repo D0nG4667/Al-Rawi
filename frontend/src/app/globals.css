@@ -1,28 +1,113 @@
 @import "tailwindcss";
 
-:root {
-  --background: 220 18% 5%; /* #0B0C10 */
-  --foreground: 210 40% 98%;
+:root,
+[data-theme="night"] {
+	--background: 233 39% 9%;
+	--foreground: 36 38% 93%;
+	--bg-canvas: #0e1020;
+	--bg-surface: rgba(18, 21, 38, 0.78);
+	--bg-elevated: rgba(26, 30, 52, 0.9);
+	--bg-subtle: rgba(255, 248, 235, 0.04);
+	--text-primary: #f5efe6;
+	--text-secondary: #b8aea0;
+	--text-muted: #7e7568;
+	--accent-gold: #d9a441;
+	--accent-gold-soft: rgba(217, 164, 65, 0.16);
+	--accent-terracotta: #c8673e;
+	--accent-terracotta-soft: rgba(200, 103, 62, 0.18);
+	--accent-oasis: #2e8b6e;
+	--border-subtle: rgba(217, 164, 65, 0.18);
+	--border-strong: rgba(217, 164, 65, 0.44);
+	--shadow-ambient: 0 20px 50px rgba(4, 6, 16, 0.65);
+}
+
+[data-theme="sandstone"] {
+	--background: 36 45% 91%;
+	--foreground: 25 35% 12%;
+	--bg-canvas: #f4eadb;
+	--bg-surface: rgba(249, 242, 230, 0.84);
+	--bg-elevated: rgba(240, 229, 211, 0.94);
+	--bg-subtle: rgba(42, 29, 20, 0.05);
+	--text-primary: #2a1d14;
+	--text-secondary: #5c4938;
+	--text-muted: #8a7460;
+	--accent-gold: #a86a1f;
+	--accent-gold-soft: rgba(168, 106, 31, 0.14);
+	--accent-terracotta: #b04e28;
+	--accent-terracotta-soft: rgba(176, 78, 40, 0.15);
+	--accent-oasis: #1f6e55;
+	--border-subtle: rgba(168, 106, 31, 0.22);
+	--border-strong: rgba(168, 106, 31, 0.48);
+	--shadow-ambient: 0 20px 48px rgba(74, 50, 28, 0.18);
 }
 
 @theme inline {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+	--color-background: var(--bg-canvas);
+	--color-foreground: var(--text-primary);
+	--font-sans: var(--font-plex-arabic), system-ui, sans-serif;
+	--font-mono: var(--font-plex-mono), monospace;
 }
 
 body {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
-  overflow-x: hidden;
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+	background-color: var(--bg-canvas);
+	color: var(--text-primary);
+	overflow-x: hidden;
+	font-family: var(--font-plex-arabic), system-ui, sans-serif;
+	transition:
+		background-color 0.35s ease,
+		color 0.35s ease;
+}
+
+.font-display {
+	font-family:
+		var(--font-fraunces), var(--font-reem-kufi), Georgia, serif;
+}
+
+html[dir="rtl"] .font-display {
+	font-family:
+		var(--font-reem-kufi), var(--font-plex-arabic), sans-serif;
+}
+
+.font-mono-tabular {
+	font-family: var(--font-plex-mono), monospace;
+	font-variant-numeric: tabular-nums;
 }
 
 .glass-panel {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.75rem;
+	background: var(--bg-surface);
+	color: var(--text-primary);
+	backdrop-filter: blur(18px) saturate(140%);
+	-webkit-backdrop-filter: blur(18px) saturate(140%);
+	border: 1px solid var(--border-subtle);
+	border-radius: 1rem;
+	box-shadow: var(--shadow-ambient);
+}
+
+.manuscript-card {
+	background: var(--bg-elevated);
+	color: var(--text-primary);
+	border: 1px solid var(--border-subtle);
+	border-radius: 0.875rem;
+	transition:
+		border-color 0.2s ease,
+		transform 0.2s ease,
+		background-color 0.2s ease;
+}
+
+.manuscript-card:hover {
+	border-color: var(--border-strong);
+}
+
+.heritage-chip {
+	background: var(--accent-gold-soft);
+	color: var(--accent-gold);
+	border: 1px solid var(--border-subtle);
+	transition:
+		background-color 0.2s ease,
+		border-color 0.2s ease,
+		transform 0.2s ease;
+}
+
+.heritage-chip:hover {
+	border-color: var(--border-strong);
 }
