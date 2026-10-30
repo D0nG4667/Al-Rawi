@@ -59,7 +59,7 @@ function PlaceholderModel(): React.ReactElement {
 	return (
 		<mesh castShadow receiveShadow>
 			<boxGeometry args={[2, 3, 2]} />
-			<meshStandardMaterial color="#c5a880" roughness={0.8} metalness={0.2} />
+			<meshStandardMaterial color="#c89d66" roughness={0.75} metalness={0.25} />
 		</mesh>
 	);
 }
@@ -73,6 +73,7 @@ function SafeModel({
 	const groupRef = React.useRef<THREE.Group>(null);
 	const isAIThinking = useUIStore((state) => state.isAIThinking);
 	const cameraCoordinates = useUIStore((state) => state.cameraCoordinates);
+	const activeDrawer = useUIStore((state) => state.activeDrawer);
 
 	const dataArray = React.useMemo(() => {
 		return audioAnalyser
@@ -81,13 +82,16 @@ function SafeModel({
 	}, [audioAnalyser]);
 
 	useFrame((state, delta) => {
-		// Smoothly interpolate camera toward active UIStore target coordinates
+		// Offset horizontal camera framing slightly when a slide-over sheet is open
+		const drawerOffset =
+			activeDrawer === "oracle" ? -1.1 : activeDrawer === "archive" ? 1.1 : 0;
+
 		const targetPos = new THREE.Vector3(
-			cameraCoordinates[0],
+			cameraCoordinates[0] + drawerOffset,
 			cameraCoordinates[1],
 			cameraCoordinates[2],
 		);
-		state.camera.position.lerp(targetPos, 0.02);
+		state.camera.position.lerp(targetPos, 0.03);
 
 		if (groupRef.current && isAIThinking) {
 			groupRef.current.rotation.y += delta * 1.8;
@@ -125,17 +129,23 @@ export default function Scene({
 }: SceneProps): React.ReactElement {
 	const [contextLost, setContextLost] = React.useState(false);
 	const isAIThinking = useUIStore((state) => state.isAIThinking);
+	const theme = useUIStore((state) => state.theme);
+
+	const isSandstone = theme === "sandstone";
+	const fogColor = isSandstone ? "#f4eadb" : "#0e1020";
+	const keyLightColor = isSandstone ? "#fff1d6" : "#f5cfa0";
+	const rimLightColor = isSandstone ? "#d9a441" : "#c8673e";
 
 	return (
-		<div className="fixed inset-0 -z-10 bg-[#0B0C10]">
+		<div className="fixed inset-0 -z-10 bg-[var(--bg-canvas)] transition-colors duration-500">
 			{contextLost && (
-				<div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+				<div className="absolute inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm">
 					<div className="glass-panel p-6 max-w-sm text-center flex flex-col gap-3">
-						<h3 className="font-semibold text-lg text-amber-400">
+						<h3 className="font-display font-semibold text-lg text-[var(--accent-gold)]">
 							Graphics Context Reset
 						</h3>
-						<p className="text-sm opacity-80">
-							Reloading 3D scene, please wait...
+						<p className="text-sm text-[var(--text-secondary)]">
+							Reloading 3D architectural scene, please wait...
 						</p>
 					</div>
 				</div>
@@ -154,10 +164,21 @@ export default function Scene({
 					});
 				}}
 			>
+				<color attach="background" args={[fogColor]} />
+				<fog attach="fog" args={[fogColor, 10, 26]} />
 				<Suspense fallback={null}>
-					<ambientLight intensity={0.4} />
-					<directionalLight position={[5, 10, 5]} intensity={0.8} />
-					<Environment preset="city" />
+					<ambientLight intensity={isSandstone ? 0.75 : 0.42} />
+					<directionalLight
+						position={[5, 10, 5]}
+						intensity={isSandstone ? 1.15 : 0.85}
+						color={keyLightColor}
+					/>
+					<pointLight
+						position={[-6, 3, -4]}
+						intensity={isSandstone ? 0.45 : 0.65}
+						color={rimLightColor}
+					/>
+					<Environment preset={isSandstone ? "sunset" : "city"} />
 
 					{/* High-Poly Model */}
 					<ErrorBoundary fallback={<PlaceholderModel />}>
@@ -167,19 +188,31 @@ export default function Scene({
 					{/* Cinematic Post-Processing Effects */}
 					<EffectComposer>
 						<Bloom
-							luminanceThreshold={0.2}
+							luminanceThreshold={isSandstone ? 0.45 : 0.22}
 							luminanceSmoothing={0.9}
 							height={300}
-							intensity={isAIThinking ? 2.2 : 1.2}
+							intensity={
+								isAIThinking
+									? isSandstone
+										? 1.4
+										: 2.2
+									: isSandstone
+										? 0.65
+										: 1.15
+							}
 						/>
 						<Noise opacity={0.015} />
-						<Vignette eskil={false} offset={0.05} darkness={1.05} />
+						<Vignette
+							eskil={false}
+							offset={0.05}
+							darkness={isSandstone ? 0.55 : 1.0}
+						/>
 					</EffectComposer>
 
 					<OrbitControls
 						enableZoom={false}
 						autoRotate
-						autoRotateSpeed={isAIThinking ? 2.5 : 0.5}
+						autoRotateSpeed={isAIThinking ? 2.5 : 0.45}
 					/>
 				</Suspense>
 			</Canvas>

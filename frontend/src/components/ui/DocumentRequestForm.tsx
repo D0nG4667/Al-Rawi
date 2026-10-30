@@ -1,5 +1,6 @@
 "use client";
 
+import { Globe, Send } from "lucide-react";
 import { type FormEvent, useState } from "react";
 
 interface DocumentRequestFormProps {
@@ -8,7 +9,7 @@ interface DocumentRequestFormProps {
 
 export default function DocumentRequestForm({
 	apiKey,
-}: DocumentRequestFormProps) {
+}: DocumentRequestFormProps): React.ReactElement {
 	const [url, setUrl] = useState("");
 	const [status, setStatus] = useState<
 		"idle" | "loading" | "success" | "error"
@@ -26,7 +27,7 @@ export default function DocumentRequestForm({
 
 		try {
 			new URL(url);
-		} catch (_) {
+		} catch {
 			setStatus("error");
 			setFeedback("Please enter a fully qualified URL (e.g., https://...)");
 			return;
@@ -63,34 +64,41 @@ export default function DocumentRequestForm({
 	};
 
 	return (
-		<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+		<form onSubmit={handleSubmit} className="flex flex-col gap-3">
 			<div className="flex flex-col gap-1.5">
-				<label htmlFor="doc-url" className="text-xs font-semibold opacity-70">
-					Document URL
+				<label
+					htmlFor="doc-url"
+					className="text-[11px] font-mono-tabular uppercase tracking-wider text-[var(--text-secondary)] flex items-center gap-1.5"
+				>
+					<Globe className="w-3.5 h-3.5 text-[var(--accent-gold)]" />
+					Remote UNESCO / Archival Dossier URL
 				</label>
 				<input
 					id="doc-url"
 					type="url"
-					placeholder="https://example.com/heritage-doc.pdf"
+					placeholder="https://whc.unesco.org/document/hegra-dossier.pdf"
 					value={url}
 					onChange={(e) => setUrl(e.target.value)}
 					disabled={status === "loading"}
-					className="bg-black/50 border border-white/15 rounded-lg px-4 py-2.5 w-full text-sm outline-none focus:border-white/30 transition-colors disabled:opacity-50"
+					className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--border-strong)] rounded-xl px-3.5 py-2.5 w-full text-xs outline-none transition-colors disabled:opacity-50 text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
 				/>
 			</div>
 
 			<button
 				type="submit"
 				disabled={status === "loading"}
-				className="w-full bg-white/10 text-white hover:bg-white/20 active:scale-98 transition-all border border-white/25 rounded-lg py-2.5 font-medium text-sm shadow-[0_2px_10px_rgba(0,0,0,0.3)] disabled:opacity-50"
+				className="w-full heritage-chip rounded-xl py-2.5 font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
 			>
+				<Send className="w-3.5 h-3.5" />
 				{status === "loading" ? "Submitting..." : "Submit Ingestion Request"}
 			</button>
 
 			{feedback && (
 				<p
-					className={`text-xs mt-1 leading-relaxed ${
-						status === "success" ? "text-green-400" : "text-red-400"
+					className={`text-xs leading-relaxed ${
+						status === "success"
+							? "text-[var(--accent-oasis)]"
+							: "text-[var(--accent-terracotta)]"
 					}`}
 				>
 					{feedback}

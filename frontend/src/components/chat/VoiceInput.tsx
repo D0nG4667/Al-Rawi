@@ -32,14 +32,13 @@ interface ISpeechRecognition {
 export default function VoiceInput({
 	onTranscript,
 	disabled,
-}: VoiceInputProps) {
+}: VoiceInputProps): React.ReactElement {
 	const [isListening, setIsListening] = useState(false);
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const recognitionRef = useRef<ISpeechRecognition | null>(null);
 	const animationRef = useRef<number | null>(null);
 
 	useEffect(() => {
-		// Initialize browser SpeechRecognition
 		const SpeechRecognition =
 			(
 				window as unknown as {
@@ -56,7 +55,7 @@ export default function VoiceInput({
 			const rec = new SpeechRecognition();
 			rec.continuous = false;
 			rec.interimResults = false;
-			rec.lang = "en-US"; // Default language
+			rec.lang = document.documentElement.lang === "ar" ? "ar-SA" : "en-US";
 
 			rec.onresult = (event: ISpeechRecognitionEvent) => {
 				const text = event.results[0][0].transcript;
@@ -85,7 +84,6 @@ export default function VoiceInput({
 		};
 	}, [onTranscript]);
 
-	// Sine wave canvas animation loop when listening
 	useEffect(() => {
 		const canvas = canvasRef.current;
 		if (!canvas) return;
@@ -98,12 +96,11 @@ export default function VoiceInput({
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			ctx.lineWidth = 1.5;
 
-			// Draw 3 layered offset sine waves for premium aesthetic
 			for (let i = 0; i < 3; i++) {
 				ctx.beginPath();
 				const offset = i * (Math.PI / 3);
-				const alpha = 0.2 + (1 - i / 3) * 0.5;
-				ctx.strokeStyle = `rgba(245, 158, 11, ${alpha})`; // amber-500
+				const alpha = 0.25 + (1 - i / 3) * 0.55;
+				ctx.strokeStyle = `rgba(217, 164, 65, ${alpha})`;
 
 				for (let x = 0; x < canvas.width; x++) {
 					const angle = (x / canvas.width) * Math.PI * 4 + phase + offset;
@@ -134,7 +131,7 @@ export default function VoiceInput({
 		}
 	}, [isListening]);
 
-	const toggleListening = () => {
+	const toggleListening = (): void => {
 		if (isListening) {
 			recognitionRef.current?.stop();
 			setIsListening(false);
@@ -149,23 +146,26 @@ export default function VoiceInput({
 	};
 
 	return (
-		<div className="flex items-center gap-3">
+		<div className="flex items-center gap-2">
 			{isListening && (
 				<canvas
 					ref={canvasRef}
-					width={120}
+					width={96}
 					height={32}
-					className="h-8 w-28 bg-black/20 border border-white/5 rounded-full overflow-hidden"
+					className="h-8 w-24 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-full overflow-hidden"
 				/>
 			)}
 			<button
 				type="button"
 				onClick={toggleListening}
 				disabled={disabled}
-				className={`p-2.5 rounded-lg border transition-all cursor-pointer ${
+				aria-label={
+					isListening ? "Stop voice input" : "Start voice narration input"
+				}
+				className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
 					isListening
-						? "bg-amber-500/20 border-amber-500 text-amber-300 animate-pulse shadow-[0_0_12px_rgba(245,158,11,0.25)]"
-						: "border-white/15 hover:bg-white/10 text-white/80"
+						? "bg-[var(--accent-terracotta-soft)] border-[var(--accent-terracotta)] text-[var(--accent-terracotta)] animate-pulse"
+						: "border-[var(--border-subtle)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
 				} disabled:opacity-30`}
 				title={isListening ? "Listening... click to stop" : "Start Voice Input"}
 			>

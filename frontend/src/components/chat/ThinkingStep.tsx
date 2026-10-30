@@ -27,56 +27,52 @@ interface ThinkingStepProps {
 export default function ThinkingStep({
 	isThinking,
 	currentQuery,
-}: ThinkingStepProps) {
+}: ThinkingStepProps): React.ReactElement | null {
 	const [isOpen, setIsOpen] = useState(true);
 
-	// Static reasoning checkpoints simulation for seamless client UX
 	const steps: Step[] = [
 		{
 			id: "search",
-			title: "Workspace Index Matching",
+			title: "Archival Index Matching",
 			status: isThinking ? "active" : "completed",
-			description: "Searching database and semantic cache repositories...",
-			icon: <Database className="w-4 h-4 text-blue-400" />,
+			description: "Scanning UNESCO & Darah vector repositories...",
+			icon: <Database className="w-3.5 h-3.5 text-[var(--accent-gold)]" />,
 		},
 		{
 			id: "vector",
-			title: "Hybrid Vector Retrieval",
+			title: "Hybrid Semantic Retrieval",
 			status: isThinking ? "waiting" : "completed",
-			description:
-				"Matching document nodes and extracting heritage segments...",
-			icon: <Search className="w-4 h-4 text-purple-400" />,
+			description: "Extracting high-relevance architectural passages...",
+			icon: <Search className="w-3.5 h-3.5 text-[var(--accent-terracotta)]" />,
 		},
 		{
 			id: "guard",
-			title: "Prompt Guardrails Verification",
+			title: "Provenance & Safety Guardrails",
 			status: isThinking ? "waiting" : "completed",
-			description:
-				"Validating against prompt injection & safety policy maps...",
-			icon: <ShieldCheck className="w-4 h-4 text-emerald-400" />,
+			description: "Verifying historical fidelity & RLS policy gates...",
+			icon: <ShieldCheck className="w-3.5 h-3.5 text-[var(--accent-oasis)]" />,
 		},
 		{
 			id: "synthesis",
-			title: "Gemini Context Synthesis",
+			title: "Manuscript Chronicle Synthesis",
 			status: isThinking ? "waiting" : "completed",
-			description:
-				"Formatting historical narratives and multilingual structures...",
-			icon: <Sparkles className="w-4 h-4 text-amber-400" />,
+			description: "Composing bilingual narrative with folio citations...",
+			icon: <Sparkles className="w-3.5 h-3.5 text-[var(--accent-gold)]" />,
 		},
 	];
 
 	if (!isThinking) return null;
 
 	return (
-		<div className="border border-white/10 bg-black/40 rounded-xl overflow-hidden mb-4 transition-all">
+		<div className="manuscript-card overflow-hidden my-3 transition-all">
 			<button
 				type="button"
 				onClick={() => setIsOpen(!isOpen)}
-				className="w-full flex items-center justify-between p-3.5 hover:bg-white/5 transition-colors text-xs font-semibold text-white/70"
+				className="w-full flex items-center justify-between p-3.5 hover:bg-[var(--bg-subtle)] transition-colors text-xs font-semibold text-[var(--text-secondary)] cursor-pointer"
 			>
-				<span className="flex items-center gap-2 text-amber-300">
-					<span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-					Reasoning Engine Pipeline
+				<span className="flex items-center gap-2.5 text-[var(--accent-gold)] font-display">
+					<span className="w-2 h-2 rounded-full bg-[var(--accent-gold)] animate-ping" />
+					Consulting the Heritage Archives...
 				</span>
 				{isOpen ? (
 					<ChevronUp className="w-4 h-4" />
@@ -86,30 +82,30 @@ export default function ThinkingStep({
 			</button>
 
 			{isOpen && (
-				<div className="p-4 pt-0 border-t border-white/5 bg-black/20 divide-y divide-white/5 space-y-3.5">
-					<div className="text-[10px] text-white/40 mt-3 font-mono tracking-wider">
-						QUERY: "{currentQuery || "..."}"
+				<div className="p-4 pt-2 border-t border-[var(--border-subtle)] space-y-3">
+					<div className="text-[10px] text-[var(--text-muted)] font-mono-tabular tracking-wider truncate">
+						INQUIRY: “{currentQuery || "..."}”
 					</div>
-					<div className="space-y-3 pt-3.5">
+					<div className="space-y-2.5 pt-1">
 						{steps.map((step) => (
 							<div key={step.id} className="flex gap-3 items-start text-xs">
 								<div className="mt-0.5">
 									{step.status === "completed" ? (
-										<CheckCircle className="w-4 h-4 text-green-400" />
+										<CheckCircle className="w-4 h-4 text-[var(--accent-oasis)]" />
 									) : step.status === "active" ? (
 										<span className="w-4 h-4 flex items-center justify-center relative">
-											<span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+											<span className="w-2.5 h-2.5 rounded-full bg-[var(--accent-gold)] animate-pulse" />
 										</span>
 									) : (
-										<span className="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center" />
+										<span className="w-4 h-4 rounded-full border border-[var(--border-subtle)] flex items-center justify-center" />
 									)}
 								</div>
 								<div className="flex-1">
-									<div className="flex items-center gap-1.5 font-medium text-white/90">
+									<div className="flex items-center gap-1.5 font-medium text-[var(--text-primary)]">
 										{step.icon}
 										{step.title}
 									</div>
-									<p className="text-[10px] text-white/50 mt-0.5 leading-relaxed">
+									<p className="text-[11px] text-[var(--text-secondary)] mt-0.5 leading-relaxed">
 										{step.description}
 									</p>
 								</div>
