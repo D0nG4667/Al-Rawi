@@ -1,3 +1,6 @@
+import type React from "react";
+import HeritageOrnament from "@/components/ui/HeritageOrnament";
+
 interface TelemetryCardProps {
 	title: string;
 	value: string | number;
@@ -10,26 +13,28 @@ export default function TelemetryCard({
 	value,
 	description,
 	status = "healthy",
-}: TelemetryCardProps) {
+}: TelemetryCardProps): React.ReactElement {
 	const statusColors = {
-		healthy: "bg-green-500 shadow-[0_0_8px_#22c55e]",
-		warning: "bg-amber-500 shadow-[0_0_8px_#f59e0b]",
-		error: "bg-red-500 shadow-[0_0_8px_#ef4444]",
+		healthy: "bg-[var(--accent-oasis)] shadow-[0_0_8px_var(--accent-oasis)]",
+		warning: "bg-[var(--accent-gold)] shadow-[0_0_8px_var(--accent-gold)]",
+		error:
+			"bg-[var(--accent-terracotta)] shadow-[0_0_8px_var(--accent-terracotta)]",
 	};
 
 	return (
-		<div className="glass-panel p-5 flex flex-col gap-3 min-w-[200px]">
+		<div className="manuscript-card p-5 flex flex-col gap-3 min-w-[200px]">
 			<div className="flex justify-between items-start gap-2">
-				<span className="text-xs font-semibold opacity-60 tracking-wider uppercase">
+				<span className="text-[11px] font-mono-tabular font-semibold text-[var(--text-secondary)] tracking-widest uppercase flex items-center gap-1.5">
+					<HeritageOrnament variant="corner-rosette" className="w-3 h-3" />
 					{title}
 				</span>
-				<span className={`w-2 h-2 rounded-full ${statusColors[status]}`} />
+				<span className={`w-2.5 h-2.5 rounded-full ${statusColors[status]}`} />
 			</div>
 			<div className="flex flex-col gap-1">
-				<span className="text-2xl font-bold tracking-tight text-white">
+				<span className="text-2xl font-mono-tabular font-bold tracking-tight text-[var(--text-primary)]">
 					{value}
 				</span>
-				<span className="text-xs opacity-50">{description}</span>
+				<span className="text-xs text-[var(--text-muted)]">{description}</span>
 			</div>
 		</div>
 	);

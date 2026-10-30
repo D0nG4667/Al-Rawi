@@ -1,3 +1,5 @@
+import type React from "react";
+
 export type ArtifactType = "MINDMAP" | "AUDIO" | "3D_MODEL" | "PDF";
 
 interface ArtifactProps {
@@ -10,17 +12,19 @@ export default function ArtifactFactory({
 	type,
 	title,
 	contentUrl,
-}: ArtifactProps) {
+}: ArtifactProps): React.ReactElement {
 	switch (type) {
 		case "MINDMAP":
 			return (
-				<div className="p-4 border border-white/10 rounded-lg bg-white/5 flex flex-col gap-2">
-					<h3 className="font-semibold text-sm">{title}</h3>
-					<p className="text-xs opacity-65">Historical Mind Map View</p>
+				<div className="p-4 manuscript-card flex flex-col gap-2">
+					<h3 className="font-display font-semibold text-sm">{title}</h3>
+					<p className="text-xs text-[var(--text-secondary)]">
+						Historical Mind Map View
+					</p>
 					{contentUrl && (
 						<a
 							href={contentUrl}
-							className="text-xs text-blue-400 hover:underline"
+							className="text-xs text-[var(--accent-gold)] hover:underline font-medium"
 						>
 							View Data Source
 						</a>
@@ -30,25 +34,27 @@ export default function ArtifactFactory({
 
 		case "AUDIO":
 			return (
-				<div className="p-4 border border-white/10 rounded-lg bg-white/5 flex flex-col gap-2">
-					<h3 className="font-semibold text-sm">{title}</h3>
+				<div className="p-4 manuscript-card flex flex-col gap-2">
+					<h3 className="font-display font-semibold text-sm">{title}</h3>
 					<div className="flex items-center gap-3">
 						<button
 							type="button"
-							className="p-2 bg-white/10 rounded-full hover:bg-white/20 text-xs"
+							className="px-3 py-1.5 heritage-chip rounded-full text-xs font-semibold cursor-pointer"
 						>
 							Play Audio
 						</button>
-						<span className="text-xs opacity-60">Narrated History Stream</span>
+						<span className="text-xs text-[var(--text-secondary)]">
+							Narrated History Stream
+						</span>
 					</div>
 				</div>
 			);
 
 		case "3D_MODEL":
 			return (
-				<div className="p-4 border border-white/10 rounded-lg bg-white/5 flex flex-col gap-2">
-					<h3 className="font-semibold text-sm">{title}</h3>
-					<p className="text-xs opacity-65 font-medium text-amber-300">
+				<div className="p-4 manuscript-card flex flex-col gap-2">
+					<h3 className="font-display font-semibold text-sm">{title}</h3>
+					<p className="text-xs font-medium text-[var(--accent-gold)]">
 						3D Scene Highlight Active
 					</p>
 				</div>
@@ -56,23 +62,25 @@ export default function ArtifactFactory({
 
 		case "PDF":
 			return (
-				<div className="p-4 border border-white/10 rounded-lg bg-white/5 flex flex-col gap-2">
-					<h3 className="font-semibold text-sm">{title}</h3>
+				<div className="p-4 manuscript-card flex flex-col gap-2">
+					<h3 className="font-display font-semibold text-sm">{title}</h3>
 					{contentUrl ? (
 						<iframe
 							src={contentUrl}
 							title={title}
-							className="w-full h-48 border border-white/10 rounded"
+							className="w-full h-48 border border-[var(--border-subtle)] rounded-lg"
 						/>
 					) : (
-						<p className="text-xs opacity-60">No PDF Document Link Provided</p>
+						<p className="text-xs text-[var(--text-secondary)]">
+							No PDF Document Link Provided
+						</p>
 					)}
 				</div>
 			);
 
 		default:
 			return (
-				<div className="p-4 border border-red-500/20 rounded-lg bg-red-500/5 text-xs text-red-400">
+				<div className="p-4 border border-[var(--accent-terracotta)]/30 rounded-xl bg-[var(--accent-terracotta-soft)] text-xs text-[var(--accent-terracotta)]">
 					Unsupported Artifact Type
 				</div>
 			);

@@ -3,15 +3,13 @@ import type { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
 	try {
 		const { searchParams } = new URL(request.url);
 
-		// Dynamic parameters parsed from request URL
-		const title = searchParams.get("title") || "Al-Rawi | الراوي";
+		const title = searchParams.get("title") || "Al-Rawi · الراوي";
 		const subtitle =
-			searchParams.get("subtitle") ||
-			"Saudi Architectural Heritage & AI Oracle";
+			searchParams.get("subtitle") || "Illuminated Saudi Heritage & AI Oracle";
 
 		return new ImageResponse(
 			<div
@@ -22,9 +20,9 @@ export async function GET(request: NextRequest) {
 					alignItems: "center",
 					justifyContent: "center",
 					flexDirection: "column",
-					background: "#0B0C10",
-					padding: "40px",
-					border: "4px solid rgba(255, 255, 255, 0.1)",
+					background: "#0E1020",
+					padding: "48px",
+					border: "4px solid rgba(217, 164, 65, 0.35)",
 				}}
 			>
 				<div
@@ -33,21 +31,32 @@ export async function GET(request: NextRequest) {
 						flexDirection: "column",
 						alignItems: "center",
 						justifyContent: "center",
-						background: "rgba(255, 255, 255, 0.03)",
-						border: "1px solid rgba(255, 255, 255, 0.1)",
-						borderRadius: "20px",
-						padding: "60px 80px",
+						background: "rgba(26, 30, 52, 0.9)",
+						border: "2px solid rgba(217, 164, 65, 0.45)",
+						borderRadius: "24px",
+						padding: "64px 88px",
 						textAlign: "center",
-						boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
+						boxShadow: "0 20px 50px rgba(4, 6, 16, 0.7)",
 					}}
 				>
+					<div
+						style={{
+							fontSize: "16px",
+							letterSpacing: "0.25em",
+							textTransform: "uppercase",
+							color: "#D9A441",
+							marginBottom: "16px",
+						}}
+					>
+						UNESCO ARCHIVAL CHRONICLE · SAUDI ARABIA
+					</div>
 					<h1
 						style={{
 							fontSize: "64px",
 							fontWeight: "bold",
-							color: "#ffffff",
+							color: "#F5EFE6",
 							marginBottom: "20px",
-							letterSpacing: "0.05em",
+							letterSpacing: "0.04em",
 						}}
 					>
 						{title}
@@ -55,9 +64,9 @@ export async function GET(request: NextRequest) {
 					<p
 						style={{
 							fontSize: "24px",
-							color: "rgba(255, 255, 255, 0.7)",
-							maxWidth: "600px",
-							lineHeight: "1.4",
+							color: "#B8AEA0",
+							maxWidth: "680px",
+							lineHeight: "1.45",
 						}}
 					>
 						{subtitle}

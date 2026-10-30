@@ -11,7 +11,7 @@ interface TelemetryData {
 	cacheHitRatio: string;
 }
 
-export default function IngestionControl() {
+export default function IngestionControl(): React.ReactElement {
 	const [telemetry, setTelemetry] = useState<TelemetryData>({
 		totalChunks: "12,408",
 		dbLatency: "14ms",
@@ -105,41 +105,43 @@ export default function IngestionControl() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			<section className="grid grid-cols-1 md:grid-cols-4 gap-6">
+			<section className="grid grid-cols-1 md:grid-cols-4 gap-5">
 				<TelemetryCard
 					title="Total Chunks"
 					value={telemetry.totalChunks}
-					description="Ingested vector snippets"
+					description="Ingested pgvector folio snippets"
 					status="healthy"
 				/>
 				<TelemetryCard
 					title="DB Latency"
 					value={telemetry.dbLatency}
-					description="Neon Auth database load"
+					description="Neon Postgres RLS query speed"
 					status="healthy"
 				/>
 				<TelemetryCard
 					title="Sentry Errors"
 					value={telemetry.sentryErrors}
-					description="Unresolved exceptions"
+					description="Unresolved pipeline exceptions"
 					status="healthy"
 				/>
 				<TelemetryCard
 					title="Cache Hit Ratio"
 					value={telemetry.cacheHitRatio}
-					description="Upstash Redis performance"
+					description="Upstash Redis semantic cache"
 					status="healthy"
 				/>
 			</section>
 
 			<section className="glass-panel p-5 flex flex-wrap items-center justify-between gap-4">
 				<div className="flex items-center gap-3">
-					<Database className="w-4 h-4 text-amber-300" />
+					<div className="p-2.5 rounded-xl heritage-chip">
+						<Database className="w-4 h-4" />
+					</div>
 					<div>
-						<h2 className="text-sm font-semibold tracking-wider uppercase">
-							Archive Pipeline Controls
+						<h2 className="text-sm font-display font-bold tracking-wide uppercase">
+							Archive Pipeline Operations
 						</h2>
-						<p className="text-xs opacity-60">
+						<p className="text-xs text-[var(--text-secondary)]">
 							Trigger asynchronous UNESCO dossier ingestion or purge the
 							semantic vector cache
 						</p>
@@ -150,7 +152,7 @@ export default function IngestionControl() {
 						type="button"
 						onClick={handleTriggerIngest}
 						disabled={isLoading}
-						className="text-xs bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded-full px-4 py-2 hover:bg-amber-500/30 transition-all font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+						className="text-xs heritage-chip rounded-full px-4 py-2 font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
 					>
 						<RefreshCw className="w-3.5 h-3.5" />
 						Queue Ingestion
@@ -159,14 +161,14 @@ export default function IngestionControl() {
 						type="button"
 						onClick={handleInvalidateCache}
 						disabled={isLoading}
-						className="text-xs bg-red-500/15 border border-red-500/30 text-red-300 rounded-full px-4 py-2 hover:bg-red-500/25 transition-all font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+						className="text-xs bg-[var(--accent-terracotta-soft)] border border-[var(--accent-terracotta)]/40 text-[var(--accent-terracotta)] rounded-full px-4 py-2 hover:border-[var(--accent-terracotta)] transition-all font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
 					>
 						<Trash2 className="w-3.5 h-3.5" />
 						Purge Semantic Cache
 					</button>
 				</div>
 				{statusMessage && (
-					<p className="w-full text-xs text-amber-300 border-t border-white/10 pt-2">
+					<p className="w-full text-xs text-[var(--accent-gold)] border-t border-[var(--border-subtle)] pt-3 font-mono-tabular">
 						{statusMessage}
 					</p>
 				)}
