@@ -8,7 +8,8 @@
 		"start": "next start",
 		"lint": "biome lint .",
 		"format": "biome format . --write",
-		"test": "vitest run",
+		"format:check": "biome format .",
+		"test": "node src/tests/admin-check.js && node src/tests/form-check.js && node src/tests/i18n-check.js && node src/tests/landing-check.js && node src/tests/og-check.js && node src/tests/patterns-check.js && node src/tests/pwa-check.js && node src/tests/ratelimit-check.js && node src/tests/readme-check.js",
 		"prepare": "husky"
 	},
 	"dependencies": {
