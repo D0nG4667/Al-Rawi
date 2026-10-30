@@ -3,9 +3,17 @@
 	"version": "1.0.0",
 	"private": true,
 	"description": "Al-Rawi monorepo tooling: git hooks, commit conventions and cross-stack developer scripts",
-	"packageManager": "pnpm@10.23.0",
-	"engines": {
-		"node": ">=22"
+	"devEngines": {
+		"runtime": {
+			"name": "node",
+			"version": ">=24.0.0",
+			"onFail": "download"
+		},
+		"packageManager": {
+			"name": "pnpm",
+			"version": ">=10.23.0",
+			"onFail": "download"
+		}
 	},
 	"scripts": {
 		"prepare": "lefthook install",
@@ -24,12 +32,9 @@
 		"hooks:validate": "lefthook validate"
 	},
 	"devDependencies": {
-		"@commitlint/cli": "^19.0.0",
-		"@commitlint/config-conventional": "^19.0.0",
+		"@commitlint/cli": "^21.2.4",
+		"@commitlint/config-conventional": "^21.2.4",
 		"concurrently": "^10.0.6",
 		"lefthook": "^2.2.2"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": ["lefthook"]
 	}
 }

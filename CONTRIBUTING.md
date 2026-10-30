@@ -6,8 +6,8 @@ Thanks for helping bring Saudi heritage to life. This guide gets you from clone 
 
 | Tool | Version | Notes |
 |---|---|---|
-| Node.js | 22 (see `.node-version`) | `fnm` / `nvm` / Volta read the pin automatically |
-| pnpm | 10.23.0 (via Corepack) | `corepack enable` once — the version comes from `packageManager` |
+| Node.js | 26 LTS (`devEngines.runtime` / `.node-version`) | pnpm downloads the pinned runtime automatically; `fnm` / Volta read `.node-version` |
+| pnpm | 12 (`devEngines.packageManager`) | install any pnpm 11+ once (`npm i -g pnpm`); it switches to the pinned version itself |
 | Python | 3.12 (see `.python-version`) | managed by `uv` |
 | uv | latest | <https://docs.astral.sh/uv/> |
 | Docker | Desktop / Engine with Compose v2 | local Postgres + pgvector and Redis |
@@ -18,7 +18,7 @@ Prefer zero setup? Open the repo in **GitHub Codespaces** or a **VS Code Dev Con
 ## First-time setup
 
 ```bash
-corepack enable
+npm install -g pnpm@latest   # once; pnpm then self-manages via devEngines
 pnpm install            # root tooling + installs Lefthook git hooks
 pnpm bootstrap          # frontend deps + backend virtualenv (uv sync --all-groups)
 cp backend/.env.example backend/.env

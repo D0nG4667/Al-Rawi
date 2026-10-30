@@ -1,0 +1,5 @@
+# pnpm settings for the root tooling package (pnpm 11+ reads settings from this
+# file instead of the `pnpm` field in package.json). No `packages` are listed:
+# the frontend keeps its own lockfile and workspace file.
+allowBuilds:
+  lefthook: true

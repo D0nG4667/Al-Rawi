@@ -79,7 +79,7 @@ Al-Rawi/
 ├── docker/                 # Local service init scripts (pgvector extension)
 ├── .devcontainer/          # Codespaces / Dev Container definition
 ├── .github/                # CI, CodeQL, release-please, Dependabot, templates & CODEOWNERS
-├── docker-compose.yml      # Local Postgres (pgvector) + Redis
+├── compose.yaml            # Local Postgres 18 (pgvector) + Redis 8
 ├── lefthook.yml            # Git hooks: Biome, Ruff, gitleaks, commitlint, pre-push tests
 ├── package.json            # Root developer scripts (dev, check, fix, services:*)
 └── PROMPTS.md              # System prompts, RAG templates, and guardrail policies
@@ -93,7 +93,7 @@ Al-Rawi/
 > Full details live in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
-corepack enable                 # pnpm version comes from packageManager
+npm install -g pnpm@latest      # once; pnpm self-manages via devEngines
 pnpm install                    # root tooling + Lefthook git hooks
 pnpm bootstrap                  # frontend deps + backend virtualenv (uv)
 cp backend/.env.example backend/.env           # add GOOGLE_API_KEY
@@ -110,9 +110,9 @@ Open `http://localhost:3000` to launch the Al-Rawi experience.
 
 | Layer | Tooling |
 |---|---|
-| Toolchain pins | `.node-version` (22), `.python-version` (3.12), `packageManager: pnpm@10.23.0` |
+| Toolchain pins | `devEngines` (Node 26 LTS, pnpm 12), `.node-version`, `.python-version` |
 | Git hooks | [Lefthook](lefthook.yml): staged-only Biome + Ruff + gitleaks (`pre-commit`), commitlint (`commit-msg`), tsc + tests (`pre-push`) |
-| Local stack | `docker-compose.yml`, root `pnpm dev` / `check` / `fix` scripts, Dev Container |
+| Local stack | `compose.yaml`, root `pnpm dev` / `check` / `fix` scripts, Dev Container |
 | CI | [`ci.yml`](.github/workflows/ci.yml): path-filtered frontend & backend jobs, coverage, Docker build with GHA cache, Trivy scan, GHCR publish on `main`, single `CI success` gate |
 | Security | CodeQL (JS/TS + Python), gitleaks, dependency review, least-privilege workflow permissions |
 | Releases & deps | release-please (changelog, semver tags), grouped Dependabot updates, Neon preview DB per PR |

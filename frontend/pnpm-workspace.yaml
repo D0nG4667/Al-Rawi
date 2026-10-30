@@ -1,3 +1,4 @@
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
+# pnpm 11+ settings. Dependency build scripts are denied unless explicitly allowed.
+allowBuilds:
+  sharp: false
+  unrs-resolver: false

@@ -43,7 +43,7 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Create or reuse Neon branch
         id: neon
@@ -61,7 +61,7 @@ jobs:
           printf '%s' "$DATABASE_URL" | npx -y vercel@latest env add DATABASE_URL preview "$GIT_BRANCH" \
             --token="$VERCEL_TOKEN" --scope="$VERCEL_ORG_ID" --force || true
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v10
         with:
           enable-cache: true
           cache-dependency-glob: backend/uv.lock

@@ -48,20 +48,20 @@ Installation: root `package.json` (private, no workspace) with devDependencies `
 
 ### Unit 2 — Reproducible toolchain & editor
 
-- `.node-version` → `22`; `.python-version` → `3.12`; `"packageManager": "pnpm@10.23.0"` in both `package.json` files (Corepack).
+- `.node-version` → `26`; `.python-version` → `3.12`; `devEngines` (`runtime: node ^26.0.0`, `packageManager: pnpm ^12.16.1`, `onFail: download`) in both `package.json` files.
 - `.editorconfig` (UTF-8, LF, final newline, tabs for TS/JSON per Biome, 4 spaces for Python).
 - `.gitattributes`: `* text=auto eol=lf`, binary rules for `*.glb *.png *.jpg *.ico *.pdf`, plus one `git add --renormalize .` commit.
 - `.vscode/extensions.json` (Biome, Ruff, Python, Tailwind CSS, EditorConfig, Docker, GitHub Actions) and shared `.vscode/settings.json`; `.gitignore` un-ignores exactly these two files.
 
 ### Unit 3 — One-command local stack
 
-- `docker-compose.yml`: `db` = `pgvector/pgvector:pg16` (port 5432, healthcheck `pg_isready`, volume `pgdata`, db `neondb`), `redis` = `redis:7-alpine` (port 6379, healthcheck `redis-cli ping`).
+- `compose.yaml`: `db` = `pgvector/pgvector:pg18` (port 5432, healthcheck `pg_isready`, volume `pgdata`, db `neondb`), `redis` = `redis:8-alpine` (port 6379, healthcheck `redis-cli ping`).
 - Root scripts:
   - `dev` → `concurrently -n api,web` running `uv run --project backend uvicorn app.main:app --reload` and `pnpm --dir frontend dev`
   - `services:up` / `services:down` → `docker compose up -d --wait` / `docker compose down`
   - `check` → frontend `biome ci` + `tsc` + `test`, backend `ruff check` + `ruff format --check` + `pytest`
   - `bootstrap` → `pnpm --dir frontend install && uv sync --project backend --all-groups` (not named `setup`, which is a built-in pnpm command)
-- `.devcontainer/devcontainer.json`: Python 3.12 image + Node 22 feature + Docker-in-Docker, `postCreateCommand: pnpm install && pnpm bootstrap`.
+- `.devcontainer/devcontainer.json`: Python 3.12 image + Node 26 + pnpm 12 feature + Docker-in-Docker, `postCreateCommand: pnpm install && pnpm bootstrap`.
 
 ### Unit 4 — Consolidated CI (`.github/workflows/ci.yml`)
 
@@ -69,12 +69,12 @@ Installation: root `package.json` (private, no workspace) with devDependencies `
 - `concurrency: ci-${{ github.ref }}` with `cancel-in-progress: true`.
 - Top-level `permissions: contents: read`.
 - Jobs:
-  1. `changes` — `dorny/paths-filter@v3` → outputs `frontend`, `backend`.
-  2. `frontend` (if frontend) — Corepack pnpm, `setup-node@v4` with pnpm cache, `biome ci .`, `tsc --noEmit`, `pnpm test`, `pnpm build`.
-  3. `backend` (if backend) — `astral-sh/setup-uv@v5` with `enable-cache: true`, `uv sync --all-groups`, `ruff check`, `ruff format --check`, `pytest --cov=app --cov-report=xml` (adds `pytest-cov` to dev group), upload coverage artifact.
-  4. `docker` (if backend) — `docker/setup-buildx-action`, `docker/build-push-action` with `cache-from/to: type=gha`; push to `ghcr.io/<owner>/al-rawi-backend` only on `main` (`packages: write` scoped to the job); Trivy scan (`aquasecurity/trivy-action`) failing on CRITICAL.
-  5. `pr-hygiene` (PR only) — `amannn/action-semantic-pull-request@v5`, `actions/dependency-review-action@v4`.
-  6. `secrets` — `gitleaks/gitleaks-action@v2`.
+  1. `changes` — `dorny/paths-filter@v4` → outputs `frontend`, `backend`.
+  2. `frontend` (if frontend) — `pnpm/setup@v3` with store cache and `require-lockfile: true`, `biome ci .`, `tsc --noEmit`, `pnpm test`, `pnpm build`.
+  3. `backend` (if backend) — `astral-sh/setup-uv@v10` with `enable-cache: true`, `uv sync --all-groups`, `ruff check`, `ruff format --check`, `pytest --cov=app --cov-report=xml` (adds `pytest-cov` to dev group), upload coverage artifact.
+  4. `docker` (if backend) — `docker/setup-buildx-action@v4`, `docker/build-push-action@v7` with `cache-from/to: type=gha`; push to `ghcr.io/<owner>/al-rawi-backend` only on `main` (`packages: write` scoped to the job); Trivy scan (`aquasecurity/trivy-action@v0.36.0`) failing on CRITICAL.
+  5. `pr-hygiene` (PR only) — `amannn/action-semantic-pull-request@v6`, `actions/dependency-review-action@v5`.
+  6. `secrets` — `gitleaks/gitleaks-action@v3`.
   7. `ci-success` — `if: always()`, fails if any needed job failed/cancelled; the single required check for branch protection.
 - `deploy.yml` is deleted (superseded).
 

@@ -1,6 +1,6 @@
-# Local development services for Al-Rawi.
-#   pnpm services:up    -> start Postgres (pgvector) + Redis and wait until healthy
-#   pnpm services:down  -> stop them (data persists in the named volume)
+# Local development services for Al-Rawi (Compose Specification).
+#   pnpm services:up    -> start Postgres 18 (pgvector) + Redis 8 and wait until healthy
+#   pnpm services:down  -> stop them (data persists in named volumes)
 # Matches backend/.env.example:
 #   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/neondb
 #   REDIS_URL=redis://localhost:6379
@@ -8,7 +8,7 @@ name: al-rawi
 
 services:
   db:
-    image: pgvector/pgvector:pg16
+    image: pgvector/pgvector:pg18
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -17,16 +17,19 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      # Postgres 18+ images keep versioned data under /var/lib/postgresql/<major>/docker,
+      # so the volume mounts the parent directory (enables pg_upgrade --link later).
+      - pgdata:/var/lib/postgresql
       - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d neondb"]
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 10s
 
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     ports:
