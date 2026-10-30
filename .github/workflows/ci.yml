@@ -1,74 +1,238 @@
-name: CI/CD Pipeline
+name: CI
 
 on:
   pull_request:
-    branches: [main]
   push:
     branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_COLOR: "1"
 
 jobs:
-  test:
+  changes:
+    name: Detect changes
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - '.node-version'
+              - '.github/workflows/ci.yml'
+            backend:
+              - 'backend/**'
+              - '.python-version'
+              - '.github/workflows/ci.yml'
+
+  frontend:
+    name: Frontend (Biome · tsc · tests · build)
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
-          version: 10.23.0
+          package_json_file: frontend/package.json
 
-      - name: Setup Node & Biome
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: "pnpm"
-          cache-dependency-path: "frontend/pnpm-lock.yaml"
+          node-version-file: .node-version
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
 
-      - run: cd frontend && pnpm install --frozen-lockfile
-      - run: cd frontend && pnpm format:check
-      - run: cd frontend && pnpm lint
-      - run: cd frontend && pnpm test
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
+      - name: Biome (format + lint)
+        run: pnpm run check
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Verification tests
+        run: pnpm test
+
+      - name: Cache Next.js build
+        uses: actions/cache@v4
         with:
-          version: "latest"
+          path: frontend/.next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('frontend/pnpm-lock.yaml') }}-${{ hashFiles('frontend/src/**') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('frontend/pnpm-lock.yaml') }}-
 
-      - name: Setup Python & Ruff
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - run: cd backend && uv sync --all-extras --dev
-      - run: cd backend && uv run ruff check .
-      - run: cd backend && uv run pytest tests/
-
-      # ENTERPRISE INTEGRATION: Dynamic Neon DB Branching & RAGAS Evaluations
-      - name: Create Neon DB Branch for Integration Testing & Sync to Vercel
-        if: github.event_name == 'pull_request' && secrets.NEON_API_KEY != ''
+      - name: Production build
+        run: pnpm build
         env:
-          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
-          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          pnpm dlx @neondatabase/api-cli vercel
-          # Create transient branch from main
-          BRANCH_DATA=$(neon branches create --project-id $NEON_PROJECT_ID --name pr-${{ github.event.number }} --output json)
-          CONN_STR=$(echo $BRANCH_DATA | jq -r '.connection_uri')
-          echo "DATABASE_URL=$CONN_STR" >> $GITHUB_ENV
-          
-          # Dynamic Vercel Sync: Inject branch DB URL into this specific Vercel PR Environment
-          vercel env add DATABASE_URL "$CONN_STR" preview git-${{ github.head_ref }} --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID --yes
-          
-          # Run RAGAS and LangSmith evaluations
-          cd backend && uv run pytest tests/test_rag.py
+          NEXT_TELEMETRY_DISABLED: "1"
 
-      - name: Delete Neon DB Branch
-        if: always() && github.event_name == 'pull_request' && secrets.NEON_API_KEY != ''
+  backend:
+    name: Backend (Ruff · pytest + coverage)
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Install dependencies
+        run: uv sync --all-groups --frozen
+
+      - name: Ruff lint
+        run: uv run ruff check . --output-format=github
+
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+      - name: Pytest with coverage
+        run: uv run pytest tests/ --cov=app --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage.xml
+          if-no-files-found: ignore
+
+  docker:
+    name: Backend image (build · scan · publish)
+    needs: [changes, backend]
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/al-rawi-backend
+      PUBLISH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: env.PUBLISH == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=sha,format=short
+            type=raw,value=latest,enable=${{ env.PUBLISH == 'true' }}
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+          format: table
+
+      - name: Push image
+        if: env.PUBLISH == 'true'
+        run: docker push --all-tags "$IMAGE"
+
+  pr-hygiene:
+    name: PR hygiene
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Conventional PR title
+        uses: amannn/action-semantic-pull-request@v5
         env:
-          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
-          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/checkout@v6
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  ci-success:
+    name: CI success
+    if: always()
+    needs: [changes, frontend, backend, docker, pr-hygiene, secrets]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all required jobs passed or were skipped
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
         run: |
-          neon branches delete pr-${{ github.event.number }} --project-id $NEON_PROJECT_ID --force
+          echo "Job results: $RESULTS"
+          for result in $RESULTS; do
+            if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
+              echo "::error::A required job finished with '$result'."
+              exit 1
+            fi
+          done
