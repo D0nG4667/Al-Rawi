@@ -1,0 +1,14 @@
+{
+	"recommendations": [
+		"biomejs.biome",
+		"charliermarsh.ruff",
+		"ms-python.python",
+		"bradlc.vscode-tailwindcss",
+		"editorconfig.editorconfig",
+		"ms-azuretools.vscode-docker",
+		"github.vscode-github-actions",
+		"redhat.vscode-yaml",
+		"ms-vscode-remote.remote-containers"
+	],
+	"unwantedRecommendations": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
+}

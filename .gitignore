@@ -93,7 +93,10 @@ pytestdebug.log
 
 # IDE / OS
 .idea/
-.vscode/
+**/.vscode/*
+!/.vscode/settings.json
+!/.vscode/extensions.json
+!/frontend/.vscode/settings.json
 *.swp
 *.swo
 .DS_Store
@@ -102,3 +105,7 @@ Thumbs.db
 # Frontend overrides to prevent global lib/ ignore matching src/lib/
 !frontend/src/lib/
 
+# ------------------------------------------
+# Git hooks (personal Lefthook overrides)
+# ------------------------------------------
+lefthook-local.yml
