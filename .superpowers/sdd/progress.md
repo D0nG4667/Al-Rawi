@@ -82,3 +82,8 @@
 - [x] Task 38: Local stack (compose.yaml with Postgres 18 pgvector + Redis 8, root dev/check/fix scripts) and Dev Container
 - [x] Task 39: Consolidated CI (path filters, caching, coverage, Docker build + Trivy + GHCR, PR hygiene, gitleaks, CI success gate)
 - [x] Task 40: CodeQL, release-please, Dependabot, Neon preview DB workflow, PR/issue templates, CODEOWNERS, CONTRIBUTING
+
+## Phase 8: UI/UX Heritage Moat Redesign (2026-10-31)
+- [x] Task 41: Dual Heritage Theme System ("Desert Night Manuscript" & "Sunlit Sandstone"), Editorial Arabic/Latin Fonts (`Fraunces`, `Reem Kufi`, `IBM Plex Sans Arabic`, `IBM Plex Mono`), & Najdi/Astrolabe SVG Motifs (`HeritageOrnament.tsx`)
+- [x] Task 42: Theme-Synchronized 3D WebGL Scene (`Scene.tsx` fog, lighting & drawer camera offset) and Manuscript Restyling of `MindMap.tsx`, `CitationDrawer.tsx`, `ThinkingStep.tsx`, and forms
+- [x] Task 43: Canvas-First Explore Workspace Decomposition (`ExploreTopBar.tsx`, `OracleCommandBar.tsx`, `ArchiveSheet.tsx`, `OracleSheet.tsx`, `ManuscriptMessage.tsx`, `MajlisStudioModal.tsx`), Progressive Manuscript Reveal, & `ui-moat-check.js` verification suite
