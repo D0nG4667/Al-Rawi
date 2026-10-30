@@ -58,6 +58,20 @@
 - [x] Task 24: RAGAS & LangSmith Evaluation Test Suite (commits dd7919e..merge, review clean)
 - [x] Task 25: Admin Control & Telemetry REST APIs (commits 3c466ff..merge, review clean)
 - [x] Task 26: Write Comprehensive Backend Documentation (README.md) (commits 6b31fd8..merge, review clean)
-- [x] Phase 3: Interactive Mind Map Engine (commits c8495d1..merge, review clean)
 
+## Phase 3: Interactive Mind Map Engine
+- [x] Task 27: Backend Mind Map Synthesis Route (`/api/v1/mindmap`) (commits c8495d1..merge, review clean)
+- [x] Task 28: Frontend ReactFlow Mind Map Overlay (`MindMap.tsx`) (commits c8495d1..merge, review clean)
 
+## Phase 4: "The Majlis" Interactive Podcast & Audio Synthesis
+- [x] Task 29: Backend Podcast Script Drafting (`/api/v1/podcast/draft`) & Audio Synthesis (`/api/v1/audio/stream`) with Mishkal diacritization, ElevenLabs TTS, and gTTS fallback (commits 6cf7c31..6cf7c31, review clean)
+- [x] Task 30: Frontend Majlis Podcast Studio & Web Audio API `AnalyserNode` 3D Reactive Shader Synchronization (commits 6cf7c31..6cf7c31, review clean)
+
+## Phase 5: UX Polish, 3D Shaders & Multi-Modal Interactivity
+- [x] Task 31: Custom GLSL Desert Sand & Holographic Shaders (`DesertSandShader.ts`) (commits 7b7d79f..7b7d79f, review clean)
+- [x] Task 32: Interactive Citations Drawer (`CitationDrawer.tsx`), Thinking States (`ThinkingStep.tsx`), & Web Speech API Voice Input (`VoiceInput.tsx`) (commits 7b7d79f..7b7d79f, review clean)
+- [x] Task 33: Procedural Web Audio Sound Design (`useSoundDesign.ts`) & UNESCO Geofencing (`useGeofence.ts`) (commits 7b7d79f..7b7d79f, review clean)
+
+## Phase 6: Final Integration, Verification & Deployment
+- [x] Task 34: Production Docker Containerization (`backend/Dockerfile`), Render Blueprint (`render.yaml`), and GitHub Actions CI/CD (`deploy.yml`, `ci.yml`) (commits 87e7fc6..HEAD, review clean)
+- [x] Task 35: End-to-End Integration Wiring (Proxy Route Bypass, Persona Forwarding, Interactive PDF Ingestion, Live Admin Telemetry, & Full Test Verification) (commits 87e7fc6..HEAD, review clean)
