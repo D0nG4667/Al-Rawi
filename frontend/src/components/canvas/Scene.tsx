@@ -10,6 +10,7 @@ import {
 } from "@react-three/postprocessing";
 import React, { Component, type ReactNode, Suspense } from "react";
 import * as THREE from "three";
+import HeritageMonument from "@/components/canvas/HeritageMonument";
 import { useUIStore } from "@/store/useUIStore";
 
 // Filter out THREE.Clock deprecation warnings triggered by react-three-fiber under the hood
@@ -55,15 +56,6 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 	}
 }
 
-function PlaceholderModel(): React.ReactElement {
-	return (
-		<mesh castShadow receiveShadow>
-			<boxGeometry args={[2, 3, 2]} />
-			<meshStandardMaterial color="#c89d66" roughness={0.75} metalness={0.25} />
-		</mesh>
-	);
-}
-
 function SafeModel({
 	audioAnalyser,
 }: {
@@ -74,6 +66,7 @@ function SafeModel({
 	const isAIThinking = useUIStore((state) => state.isAIThinking);
 	const cameraCoordinates = useUIStore((state) => state.cameraCoordinates);
 	const activeDrawer = useUIStore((state) => state.activeDrawer);
+	const activeSite = useUIStore((state) => state.activeSite);
 
 	const dataArray = React.useMemo(() => {
 		return audioAnalyser
@@ -101,21 +94,19 @@ function SafeModel({
 			audioAnalyser.getByteFrequencyData(dataArray);
 			const average =
 				dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
-			// Scale the palace scene object between 1.0x and 1.15x based on frequency volume peaks
 			const scale = 1 + (average / 255) * 0.15;
 			groupRef.current.scale.lerp(new THREE.Vector3(scale, scale, scale), 0.15);
 		} else if (groupRef.current) {
-			// Return to baseline scale smoothly
 			groupRef.current.scale.lerp(new THREE.Vector3(1, 1, 1), 0.15);
 		}
 	});
 
-	if (!gltf?.scene) {
-		return <PlaceholderModel />;
-	}
 	return (
 		<group ref={groupRef}>
-			<primitive object={gltf.scene} />
+			{gltf?.scene && activeSite === "diriyah" ? (
+				<primitive object={gltf.scene} />
+			) : null}
+			<HeritageMonument siteId={activeSite} isThinking={isAIThinking} />
 		</group>
 	);
 }
@@ -129,6 +120,7 @@ export default function Scene({
 }: SceneProps): React.ReactElement {
 	const [contextLost, setContextLost] = React.useState(false);
 	const isAIThinking = useUIStore((state) => state.isAIThinking);
+	const activeSite = useUIStore((state) => state.activeSite);
 	const theme = useUIStore((state) => state.theme);
 
 	const isSandstone = theme === "sandstone";
@@ -180,8 +172,12 @@ export default function Scene({
 					/>
 					<Environment preset={isSandstone ? "sunset" : "city"} />
 
-					{/* High-Poly Model */}
-					<ErrorBoundary fallback={<PlaceholderModel />}>
+					{/* High-Poly Model + Procedural UNESCO Monument & Astrolabe */}
+					<ErrorBoundary
+						fallback={
+							<HeritageMonument siteId={activeSite} isThinking={isAIThinking} />
+						}
+					>
 						<SafeModel audioAnalyser={audioAnalyser} />
 					</ErrorBoundary>
 

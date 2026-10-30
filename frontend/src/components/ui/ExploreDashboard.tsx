@@ -10,6 +10,7 @@ import ExploreTopBar from "@/components/explore/ExploreTopBar";
 import MajlisStudioModal from "@/components/explore/MajlisStudioModal";
 import OracleCommandBar from "@/components/explore/OracleCommandBar";
 import OracleSheet from "@/components/explore/OracleSheet";
+import SiteHotspotBar from "@/components/explore/SiteHotspotBar";
 import type {
 	ChatMessage,
 	ChatSource,
@@ -504,6 +505,14 @@ export default function ExploreDashboard({
 					onSummonMajlis={handleSummonMajlis}
 					onInteractionSound={playClick}
 				/>
+
+				<div className="flex-1 flex items-center justify-start my-4 pointer-events-none">
+					<SiteHotspotBar
+						locale={locale}
+						onAskHotspot={(inquiry) => handleSendChat(inquiry)}
+						onInteractionSound={playClick}
+					/>
+				</div>
 
 				<OracleCommandBar
 					locale={locale}
