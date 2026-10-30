@@ -34,8 +34,9 @@ def test_context_compression():
 
 
 @pytest.mark.anyio
+@patch("app.services.chat.check_query_safety", return_value=(True, ""))
 @patch("app.services.chat.get_semantic_cache")
-async def test_semantic_cache_hit(mock_get_cache):
+async def test_semantic_cache_hit(mock_get_cache, mock_safety):
     """Verify that matching cached queries bypass retrievals and LLM invocations."""
     cached_payload = {
         "answer": "At-Turaif is located in Diriyah.",
@@ -54,6 +55,9 @@ async def test_semantic_cache_hit(mock_get_cache):
 
 
 @pytest.mark.anyio
+@patch("app.services.chat.set_semantic_cache")
+@patch("app.services.chat.get_semantic_cache", return_value=None)
+@patch("app.services.chat.check_query_safety", return_value=(True, ""))
 @patch("app.services.chat.get_settings")
 @patch("app.main.redis_client")
 @patch("app.services.chat.retrieve_rag_context")
@@ -65,6 +69,9 @@ async def test_llm_resilient_failover(
     mock_retrieve,
     mock_redis,
     mock_settings,
+    mock_safety,
+    mock_get_cache,
+    mock_set_cache,
 ):
     """Verify that Gemini model failures gracefully route queries to OpenAI failover."""
     # Setup mocks
@@ -99,12 +106,21 @@ async def test_llm_resilient_failover(
 
 
 @pytest.mark.anyio
+@patch("app.services.chat.set_semantic_cache")
+@patch("app.services.chat.get_semantic_cache", return_value=None)
+@patch("app.services.chat.check_query_safety", return_value=(True, ""))
 @patch("app.services.chat.get_settings")
 @patch("app.main.redis_client")
 @patch("app.services.chat.retrieve_rag_context")
 @patch("langchain_google_genai.ChatGoogleGenerativeAI")
 async def test_complete_failover_fallback(
-    mock_gemini_class, mock_retrieve, mock_redis, mock_settings
+    mock_gemini_class,
+    mock_retrieve,
+    mock_redis,
+    mock_settings,
+    mock_safety,
+    mock_get_cache,
+    mock_set_cache,
 ):
     """Verify that if all LLM options fail, the chat service returns a resilient fallback message."""
     mock_settings.return_value.DATABASE_URL = "postgresql://localhost/mock"

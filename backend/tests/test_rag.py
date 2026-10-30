@@ -212,12 +212,19 @@ HISTORICAL_QA_SET = [
 
 
 @pytest.mark.anyio
+@patch("app.main.redis_client")
+@patch("app.services.chat.set_semantic_cache")
 @patch("app.services.chat.check_query_safety")
 @patch("app.services.chat.get_semantic_cache")
 @patch("app.services.chat.retrieve_rag_context")
 @patch("langchain_google_genai.ChatGoogleGenerativeAI")
 async def test_rag_pipeline_accuracy(
-    mock_gemini, mock_retrieve, mock_cache, mock_safety
+    mock_gemini,
+    mock_retrieve,
+    mock_cache,
+    mock_safety,
+    mock_set_cache,
+    mock_redis,
 ) -> None:
     """Evaluates the RAG pipeline answers on Faithfulness, Answer Relevance, and Context Recall."""
     # Ensure there are exactly 50 evaluation samples
@@ -226,6 +233,8 @@ async def test_rag_pipeline_accuracy(
     # 1. Setup Mock Pipeline Returns for fast standard testing
     mock_safety.return_value = (True, "")
     mock_cache.return_value = None
+    mock_redis.get = AsyncMock(return_value=None)
+    mock_redis.set = AsyncMock()
 
     mock_doc = MagicMock()
     mock_doc.page_content = (

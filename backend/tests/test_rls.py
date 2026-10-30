@@ -60,12 +60,21 @@ async def test_ingestion_tenant_isolation(
 
 
 @pytest.mark.anyio
+@patch("app.services.chat.set_semantic_cache")
+@patch("app.services.chat.get_semantic_cache", return_value=None)
+@patch("app.services.chat.check_query_safety", return_value=(True, ""))
 @patch("app.services.chat.get_settings")
 @patch("app.main.redis_client")
 @patch("app.services.chat.retrieve_rag_context")
 @patch("langchain_google_genai.ChatGoogleGenerativeAI")
 async def test_chat_query_tenant_isolation(
-    mock_gemini_class, mock_retrieve, mock_redis, mock_settings
+    mock_gemini_class,
+    mock_retrieve,
+    mock_redis,
+    mock_settings,
+    mock_safety,
+    mock_get_cache,
+    mock_set_cache,
 ):
     """Verify that chat queries target only the collection namespace owned by the current tenant."""
     mock_settings.return_value.DATABASE_URL = "postgresql://localhost/mock"
