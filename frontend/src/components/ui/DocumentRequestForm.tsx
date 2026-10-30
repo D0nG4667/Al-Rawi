@@ -2,14 +2,20 @@
 
 import { type FormEvent, useState } from "react";
 
-export default function DocumentRequestForm() {
+interface DocumentRequestFormProps {
+	apiKey?: string;
+}
+
+export default function DocumentRequestForm({
+	apiKey,
+}: DocumentRequestFormProps) {
 	const [url, setUrl] = useState("");
 	const [status, setStatus] = useState<
 		"idle" | "loading" | "success" | "error"
 	>("idle");
 	const [feedback, setFeedback] = useState("");
 
-	const handleSubmit = async (e: FormEvent) => {
+	const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
 		e.preventDefault();
 
 		if (!url) {
@@ -35,7 +41,10 @@ export default function DocumentRequestForm() {
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ url }),
+				body: JSON.stringify({
+					url,
+					...(apiKey ? { api_key: apiKey } : {}),
+				}),
 			});
 
 			if (!res.ok) {

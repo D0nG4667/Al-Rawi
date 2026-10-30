@@ -1,5 +1,5 @@
-import TelemetryCard from "@/components/admin/TelemetryCard";
 import Link from "next/link";
+import IngestionControl from "@/components/admin/IngestionControl";
 
 export default async function AdminPage({
 	params,
@@ -27,32 +27,7 @@ export default async function AdminPage({
 				</Link>
 			</header>
 
-			<section className="grid grid-cols-1 md:grid-cols-4 gap-6">
-				<TelemetryCard
-					title="Total Chunks"
-					value="12,408"
-					description="Ingested vector snippets"
-					status="healthy"
-				/>
-				<TelemetryCard
-					title="DB Latency"
-					value="14ms"
-					description="Neon Auth database load"
-					status="healthy"
-				/>
-				<TelemetryCard
-					title="Sentry Errors"
-					value="0"
-					description="Unresolved exceptions"
-					status="healthy"
-				/>
-				<TelemetryCard
-					title="Cache Hit Ratio"
-					value="94.2%"
-					description="Upstash Redis performance"
-					status="healthy"
-				/>
-			</section>
+			<IngestionControl />
 
 			<section className="glass-panel p-6 flex-1 flex flex-col gap-4">
 				<h2 className="text-sm font-semibold tracking-wider uppercase opacity-70 border-b border-white/10 pb-2">

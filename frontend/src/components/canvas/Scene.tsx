@@ -3,13 +3,14 @@
 import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
-	EffectComposer,
 	Bloom,
+	EffectComposer,
 	Noise,
 	Vignette,
 } from "@react-three/postprocessing";
-import React, { Component, Suspense, type ReactNode } from "react";
+import React, { Component, type ReactNode, Suspense } from "react";
 import * as THREE from "three";
+import { useUIStore } from "@/store/useUIStore";
 
 // Filter out THREE.Clock deprecation warnings triggered by react-three-fiber under the hood
 if (typeof window !== "undefined") {
@@ -46,7 +47,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 		return { hasError: true };
 	}
 
-	override render() {
+	override render(): ReactNode {
 		if (this.state.hasError) {
 			return this.props.fallback;
 		}
@@ -54,7 +55,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 	}
 }
 
-function PlaceholderModel() {
+function PlaceholderModel(): React.ReactElement {
 	return (
 		<mesh castShadow receiveShadow>
 			<boxGeometry args={[2, 3, 2]} />
@@ -63,16 +64,35 @@ function PlaceholderModel() {
 	);
 }
 
-function SafeModel({ audioAnalyser }: { audioAnalyser: AnalyserNode | null }) {
+function SafeModel({
+	audioAnalyser,
+}: {
+	audioAnalyser: AnalyserNode | null;
+}): React.ReactElement {
 	const gltf = useGLTF("/models/diriyah_palace_draco.glb", "/decoders/draco/");
 	const groupRef = React.useRef<THREE.Group>(null);
+	const isAIThinking = useUIStore((state) => state.isAIThinking);
+	const cameraCoordinates = useUIStore((state) => state.cameraCoordinates);
+
 	const dataArray = React.useMemo(() => {
 		return audioAnalyser
 			? new Uint8Array(audioAnalyser.frequencyBinCount)
 			: null;
 	}, [audioAnalyser]);
 
-	useFrame(() => {
+	useFrame((state, delta) => {
+		// Smoothly interpolate camera toward active UIStore target coordinates
+		const targetPos = new THREE.Vector3(
+			cameraCoordinates[0],
+			cameraCoordinates[1],
+			cameraCoordinates[2],
+		);
+		state.camera.position.lerp(targetPos, 0.02);
+
+		if (groupRef.current && isAIThinking) {
+			groupRef.current.rotation.y += delta * 1.8;
+		}
+
 		if (audioAnalyser && dataArray && groupRef.current) {
 			audioAnalyser.getByteFrequencyData(dataArray);
 			const average =
@@ -100,8 +120,11 @@ interface SceneProps {
 	audioAnalyser: AnalyserNode | null;
 }
 
-export default function Scene({ audioAnalyser }: SceneProps) {
+export default function Scene({
+	audioAnalyser,
+}: SceneProps): React.ReactElement {
 	const [contextLost, setContextLost] = React.useState(false);
+	const isAIThinking = useUIStore((state) => state.isAIThinking);
 
 	return (
 		<div className="fixed inset-0 -z-10 bg-[#0B0C10]">
@@ -147,13 +170,17 @@ export default function Scene({ audioAnalyser }: SceneProps) {
 							luminanceThreshold={0.2}
 							luminanceSmoothing={0.9}
 							height={300}
-							intensity={1.2}
+							intensity={isAIThinking ? 2.2 : 1.2}
 						/>
 						<Noise opacity={0.015} />
 						<Vignette eskil={false} offset={0.05} darkness={1.05} />
 					</EffectComposer>
 
-					<OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.5} />
+					<OrbitControls
+						enableZoom={false}
+						autoRotate
+						autoRotateSpeed={isAIThinking ? 2.5 : 0.5}
+					/>
 				</Suspense>
 			</Canvas>
 		</div>

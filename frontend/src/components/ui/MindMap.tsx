@@ -3,16 +3,17 @@
 import {
 	Background,
 	Controls,
+	type Edge,
 	Handle,
 	Position as HandlePosition,
+	type Node,
 	ReactFlow,
 	useEdgesState,
 	useNodesState,
-	type Node,
-	type Edge,
 } from "@xyflow/react";
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { type MouseEvent, useEffect, useState } from "react";
+import { useUIStore } from "@/store/useUIStore";
 import "@xyflow/react/dist/style.css";
 
 // Custom glowing glassmorphic Node Component
@@ -42,26 +43,33 @@ const nodeTypes = {
 
 interface MindMapProps {
 	query?: string;
+	apiKey?: string;
 	onClose: () => void;
 }
 
-export default function MindMap({ query, onClose }: MindMapProps) {
+export default function MindMap({ query, apiKey, onClose }: MindMapProps) {
 	const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
 	const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
+	const setFocusNode = useUIStore((state) => state.setFocusNode);
 
 	useEffect(() => {
 		let isMounted = true;
 
-		async function fetchGraph() {
+		async function fetchGraph(): Promise<void> {
 			try {
+				const payload: { query?: string; api_key?: string } = { query };
+				if (apiKey?.trim()) {
+					payload.api_key = apiKey.trim();
+				}
+
 				const response = await fetch("/api/mindmap", {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
 					},
-					body: JSON.stringify({ query }),
+					body: JSON.stringify(payload),
 				});
 
 				if (!response.ok) {
@@ -96,7 +104,13 @@ export default function MindMap({ query, onClose }: MindMapProps) {
 		return () => {
 			isMounted = false;
 		};
-	}, [query, setNodes, setEdges]);
+	}, [query, apiKey, setNodes, setEdges]);
+
+	const handleNodeClick = (_event: MouseEvent, node: Node): void => {
+		const label =
+			typeof node.data?.label === "string" ? node.data.label : node.id;
+		setFocusNode(label, [0, 1.8, 6]);
+	};
 
 	return (
 		<div className="absolute inset-0 z-50 bg-black/75 backdrop-blur-md flex flex-col pointer-events-auto text-white">
@@ -150,6 +164,7 @@ export default function MindMap({ query, onClose }: MindMapProps) {
 						edges={edges}
 						onNodesChange={onNodesChange}
 						onEdgesChange={onEdgesChange}
+						onNodeClick={handleNodeClick}
 						nodeTypes={nodeTypes}
 						fitView
 						minZoom={0.5}

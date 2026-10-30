@@ -1,29 +1,40 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import { type KeyboardEvent, useEffect, useRef, useState } from "react";
-import DocumentRequestForm from "./DocumentRequestForm";
-import PersonaSelector from "./PersonaSelector";
-import MindMap from "./MindMap";
-import Scene from "@/components/canvas/Scene";
-import ThinkingStep from "@/components/chat/ThinkingStep";
-import CitationDrawer from "@/components/chat/CitationDrawer";
-import VoiceInput from "@/components/chat/VoiceInput";
-import { useSoundDesign } from "@/hooks/useSoundDesign";
 import {
-	MessageSquare,
-	Send,
-	Volume2,
-	Play,
-	Pause,
-	Square,
-	Sparkles,
-	Trash2,
-	Plus,
-	X,
 	AudioLines,
+	CheckCircle2,
 	FileText,
+	KeyRound,
+	MessageSquare,
+	Pause,
+	Play,
+	Plus,
+	Send,
+	Sparkles,
+	Square,
+	Trash2,
+	Volume2,
+	X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import {
+	type ChangeEvent,
+	type DragEvent,
+	type KeyboardEvent,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
+import Scene from "@/components/canvas/Scene";
+import CitationDrawer from "@/components/chat/CitationDrawer";
+import ThinkingStep from "@/components/chat/ThinkingStep";
+import VoiceInput from "@/components/chat/VoiceInput";
+import { useGeofence } from "@/hooks/useGeofence";
+import { useSoundDesign } from "@/hooks/useSoundDesign";
+import { useUIStore } from "@/store/useUIStore";
+import DocumentRequestForm from "./DocumentRequestForm";
+import MindMap from "./MindMap";
+import PersonaSelector from "./PersonaSelector";
 
 interface ExploreDashboardProps {
 	locale: string;
@@ -40,12 +51,31 @@ interface PodcastScript {
 	dialogue: DialogueLine[];
 }
 
+interface UploadedDoc {
+	name: string;
+	chunks: number;
+}
+
 export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 	const t = useTranslations();
+
+	// Activate geolocation-based UNESCO geofencing
+	useGeofence();
+
+	// Global UI Store
+	const persona = useUIStore((state) => state.persona);
+	const setAIThinking = useUIStore((state) => state.setAIThinking);
 
 	// Component & Modal visibility states
 	const [isMapOpen, setIsMapOpen] = useState(false);
 	const [isMajlisOpen, setIsMajlisOpen] = useState(false);
+
+	// Optional Client API Key & File Upload states
+	const [apiKey, setApiKey] = useState("");
+	const [uploadedDocs, setUploadedDocs] = useState<UploadedDoc[]>([]);
+	const [isUploading, setIsUploading] = useState(false);
+	const [uploadError, setUploadError] = useState("");
+	const fileInputRef = useRef<HTMLInputElement | null>(null);
 
 	// Chat states
 	const [chatInput, setChatInput] = useState("");
@@ -99,7 +129,76 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 	const switchLocale = locale === "en" ? "ar" : "en";
 	const switchLabel = locale === "en" ? "العربية" : "English";
 
-	const handleSendChat = async (directText?: string) => {
+	const handleFileUpload = async (file: File): Promise<void> => {
+		if (!file.name.toLowerCase().endsWith(".pdf")) {
+			setUploadError("Only PDF dossiers are supported.");
+			return;
+		}
+		if (uploadedDocs.length >= 5) {
+			setUploadError("Maximum of 5 PDF dossiers reached.");
+			return;
+		}
+
+		playClick();
+		setIsUploading(true);
+		setUploadError("");
+
+		try {
+			const formData = new FormData();
+			formData.append("file", file);
+			if (apiKey.trim()) {
+				formData.append("api_key", apiKey.trim());
+			}
+
+			const res = await fetch("/api/upload", {
+				method: "POST",
+				body: formData,
+			});
+
+			if (!res.ok) {
+				const errData = await res.json().catch(() => ({}));
+				throw new Error(
+					typeof errData.detail === "string"
+						? errData.detail
+						: "Failed to ingest PDF dossier.",
+				);
+			}
+
+			const data = await res.json();
+			setUploadedDocs((prev) => [
+				...prev,
+				{
+					name: data.filename || file.name,
+					chunks: typeof data.chunks === "number" ? data.chunks : 0,
+				},
+			]);
+			playChime();
+		} catch (err: unknown) {
+			setUploadError(
+				err instanceof Error ? err.message : "Failed to upload document.",
+			);
+		} finally {
+			setIsUploading(false);
+		}
+	};
+
+	const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
+		const selected = e.target.files?.[0];
+		if (selected) {
+			handleFileUpload(selected);
+		}
+		e.target.value = "";
+	};
+
+	const handleDrop = (e: DragEvent<HTMLButtonElement>): void => {
+		e.preventDefault();
+		const dropped = e.dataTransfer.files?.[0];
+		if (dropped) {
+			handleFileUpload(dropped);
+		}
+	};
+
+	const handleSendChat = async (directText?: string): Promise<void> => {
 		const query = (
 			typeof directText === "string" ? directText : chatInput
 		).trim();
@@ -113,14 +212,27 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 			{ id: `user-${Date.now()}`, role: "user", text: query },
 		]);
 		setIsThinking(true);
+		setAIThinking(true);
 
 		try {
+			const payload: {
+				query: string;
+				persona: string;
+				api_key?: string;
+			} = {
+				query,
+				persona,
+			};
+			if (apiKey.trim()) {
+				payload.api_key = apiKey.trim();
+			}
+
 			const res = await fetch("/api/chat", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ query }),
+				body: JSON.stringify(payload),
 			});
 
 			if (!res.ok) {
@@ -160,10 +272,11 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 			]);
 		} finally {
 			setIsThinking(false);
+			setAIThinking(false);
 		}
 	};
 
-	const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+	const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>): void => {
 		if (e.key === "Enter") {
 			handleSendChat();
 		}
@@ -171,7 +284,7 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 
 	// --- Majlis Storytelling Handlers ---
 
-	const handleSummonMajlis = async () => {
+	const handleSummonMajlis = async (): Promise<void> => {
 		playClick();
 		setIsMajlisOpen(true);
 		playWhoosh();
@@ -186,12 +299,17 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 		const query = lastUserMsg?.text || "General Saudi UNESCO world heritage";
 
 		try {
+			const payload: { query: string; api_key?: string } = { query };
+			if (apiKey.trim()) {
+				payload.api_key = apiKey.trim();
+			}
+
 			const res = await fetch("/api/podcast/draft", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ query }),
+				body: JSON.stringify(payload),
 			});
 			if (!res.ok) {
 				throw new Error("Failed to draft Majlis dialogue.");
@@ -234,7 +352,7 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 		index: number,
 		field: keyof DialogueLine,
 		value: string,
-	) => {
+	): void => {
 		if (!majlisScript) return;
 		const updatedDialogue = [...majlisScript.dialogue];
 		updatedDialogue[index] = {
@@ -247,7 +365,7 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 		});
 	};
 
-	const handleAddDialogueLine = () => {
+	const handleAddDialogueLine = (): void => {
 		if (!majlisScript) return;
 		setMajlisScript({
 			...majlisScript,
@@ -262,7 +380,7 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 		});
 	};
 
-	const handleDeleteDialogueLine = (index: number) => {
+	const handleDeleteDialogueLine = (index: number): void => {
 		if (!majlisScript) return;
 		const updatedDialogue = majlisScript.dialogue.filter((_, i) => i !== index);
 		setMajlisScript({
@@ -271,7 +389,7 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 		});
 	};
 
-	const handleGenerateAudio = async () => {
+	const handleGenerateAudio = async (): Promise<void> => {
 		if (!majlisScript) return;
 		setIsMajlisStreaming(true);
 		stopAudio();
@@ -327,7 +445,7 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 		}
 	};
 
-	const togglePlayPause = () => {
+	const togglePlayPause = (): void => {
 		if (!audioRef.current) return;
 		if (isPlaying) {
 			audioRef.current.pause();
@@ -338,7 +456,7 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 		}
 	};
 
-	const stopAudio = () => {
+	const stopAudio = (): void => {
 		if (audioRef.current) {
 			audioRef.current.pause();
 			audioRef.current = null;
@@ -351,7 +469,7 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 		setIsPlaying(false);
 	};
 
-	const handleCloseMajlis = () => {
+	const handleCloseMajlis = (): void => {
 		playClick();
 		stopAudio();
 		setIsMajlisOpen(false);
@@ -397,6 +515,17 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 						<p className="text-xs opacity-60 mt-0.5">{t("Common.subtitle")}</p>
 					</div>
 					<div className="flex items-center gap-4">
+						<div className="hidden md:flex items-center gap-2 bg-black/40 border border-white/15 rounded-full px-3 py-1">
+							<KeyRound className="w-3.5 h-3.5 opacity-60 text-amber-300" />
+							<input
+								type="password"
+								value={apiKey}
+								onChange={(e) => setApiKey(e.target.value)}
+								placeholder="Gemini API Key (optional)"
+								aria-label="Gemini API Key"
+								className="bg-transparent text-xs outline-none w-40 text-white placeholder:text-white/40"
+							/>
+						</div>
 						<a
 							href={`/${switchLocale}`}
 							className="text-xs border border-white/20 rounded-full px-3.5 py-1.5 hover:bg-white/10 transition-all font-medium"
@@ -419,8 +548,22 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 						<h2 className="font-semibold mb-4 text-lg border-b border-white/10 pb-2">
 							{t("Dashboard.uploadTitle")}
 						</h2>
-						<div className="flex-1 flex flex-col gap-6 justify-center">
-							<div className="border border-dashed border-white/20 rounded-lg p-6 flex flex-col items-center justify-center text-center opacity-70">
+						<div className="flex-1 flex flex-col gap-5 justify-center overflow-y-auto">
+							<input
+								ref={fileInputRef}
+								type="file"
+								accept=".pdf,application/pdf"
+								onChange={handleFileInputChange}
+								className="hidden"
+							/>
+							<button
+								type="button"
+								onClick={() => fileInputRef.current?.click()}
+								onDragOver={(e) => e.preventDefault()}
+								onDrop={handleDrop}
+								disabled={isUploading || uploadedDocs.length >= 5}
+								className="border border-dashed border-white/20 hover:border-amber-400/50 rounded-lg p-6 flex flex-col items-center justify-center text-center opacity-80 hover:opacity-100 transition-all cursor-pointer disabled:opacity-40"
+							>
 								<svg
 									className="w-8 h-8 mb-3 opacity-60"
 									fill="none"
@@ -436,11 +579,40 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 										d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
 									/>
 								</svg>
-								<span className="text-sm">{t("Dashboard.uploadDropzone")}</span>
-							</div>
+								<span className="text-sm">
+									{isUploading
+										? "Ingesting PDF dossier..."
+										: t("Dashboard.uploadDropzone")}
+								</span>
+							</button>
+
+							{uploadError && (
+								<p className="text-xs text-red-400 text-center">
+									{uploadError}
+								</p>
+							)}
+
+							{uploadedDocs.length > 0 && (
+								<div className="space-y-1.5 text-xs">
+									{uploadedDocs.map((doc) => (
+										<div
+											key={doc.name}
+											className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5"
+										>
+											<span className="truncate max-w-[180px] opacity-85 flex items-center gap-1.5">
+												<CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
+												{doc.name}
+											</span>
+											<span className="text-[10px] opacity-60">
+												{doc.chunks} chunks
+											</span>
+										</div>
+									))}
+								</div>
+							)}
 
 							<div className="border-t border-white/10 pt-4">
-								<DocumentRequestForm />
+								<DocumentRequestForm apiKey={apiKey} />
 							</div>
 						</div>
 					</aside>
@@ -593,6 +765,7 @@ export default function ExploreDashboard({ locale }: ExploreDashboardProps) {
 			{isMapOpen && (
 				<MindMap
 					query={chatHistory[chatHistory.length - 1]?.text}
+					apiKey={apiKey}
 					onClose={() => {
 						playClick();
 						setIsMapOpen(false);
