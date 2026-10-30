@@ -1,0 +1,85 @@
+name: Preview Database
+
+# Creates an isolated Neon branch per pull request, syncs it to the Vercel
+# preview environment, runs the RAG evaluation against it, and deletes it when
+# the PR closes. Skips cleanly when Neon secrets are not configured.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: preview-db-${{ github.event.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  BRANCH_NAME: pr-${{ github.event.number }}
+
+jobs:
+  guard:
+    name: Check Neon configuration
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          if [ -n "$NEON_API_KEY" ]; then echo "enabled=true" >> "$GITHUB_OUTPUT"; else echo "enabled=false" >> "$GITHUB_OUTPUT"; fi
+
+  create:
+    name: Create preview branch & evaluate
+    needs: guard
+    if: needs.guard.outputs.enabled == 'true' && github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Create or reuse Neon branch
+        id: neon
+        run: |
+          npx -y neonctl@latest branches create --project-id "$NEON_PROJECT_ID" --name "$BRANCH_NAME" --output json >/dev/null 2>&1 || true
+          CONN_STR=$(npx -y neonctl@latest connection-string "$BRANCH_NAME" --project-id "$NEON_PROJECT_ID")
+          echo "::add-mask::$CONN_STR"
+          echo "DATABASE_URL=$CONN_STR" >> "$GITHUB_ENV"
+
+      - name: Sync DATABASE_URL to Vercel preview
+        if: env.VERCEL_TOKEN != ''
+        env:
+          GIT_BRANCH: ${{ github.head_ref }}
+        run: |
+          printf '%s' "$DATABASE_URL" | npx -y vercel@latest env add DATABASE_URL preview "$GIT_BRANCH" \
+            --token="$VERCEL_TOKEN" --scope="$VERCEL_ORG_ID" --force || true
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Run RAG evaluation against preview branch
+        working-directory: backend
+        run: |
+          uv sync --all-groups --frozen
+          uv run pytest tests/test_rag.py -q
+
+  cleanup:
+    name: Delete preview branch
+    needs: guard
+    if: needs.guard.outputs.enabled == 'true' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    env:
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+    steps:
+      - name: Delete Neon branch
+        run: npx -y neonctl@latest branches delete "$BRANCH_NAME" --project-id "$NEON_PROJECT_ID" || true
