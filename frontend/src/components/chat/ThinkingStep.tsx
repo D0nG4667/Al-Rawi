@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import {
+	CheckCircle,
 	ChevronDown,
 	ChevronUp,
-	CheckCircle,
+	Database,
 	Search,
 	ShieldCheck,
 	Sparkles,
-	Database,
 } from "lucide-react";
+import { useState } from "react";
 
 interface Step {
 	id: string;

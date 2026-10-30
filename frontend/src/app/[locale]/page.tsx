@@ -1,5 +1,5 @@
-import SupportButton from "@/components/ui/SupportButton";
 import ExploreDashboard from "@/components/ui/ExploreDashboard";
+import SupportButton from "@/components/ui/SupportButton";
 
 export default async function Home({
 	params,

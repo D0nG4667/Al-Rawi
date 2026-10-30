@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { Mic, MicOff } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface VoiceInputProps {
 	onTranscript: (text: string) => void;

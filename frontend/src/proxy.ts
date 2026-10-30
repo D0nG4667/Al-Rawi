@@ -1,7 +1,7 @@
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 import { type NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
-import { Redis } from "@upstash/redis";
-import { Ratelimit } from "@upstash/ratelimit";
 
 const intlMiddleware = createMiddleware({
 	// Supported locales
