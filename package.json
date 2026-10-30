@@ -9,12 +9,24 @@
 	},
 	"scripts": {
 		"prepare": "lefthook install",
+		"bootstrap": "pnpm --dir frontend install && uv --directory backend sync --all-groups",
+		"dev": "concurrently --kill-others-on-fail --names api,web --prefix-colors cyan,magenta \"pnpm dev:api\" \"pnpm dev:web\"",
+		"dev:api": "uv --directory backend run uvicorn app.main:app --reload --port 8000",
+		"dev:web": "pnpm --dir frontend dev",
+		"services:up": "docker compose up -d --wait",
+		"services:down": "docker compose down",
+		"services:logs": "docker compose logs -f",
+		"check": "pnpm check:web && pnpm check:api",
+		"check:web": "pnpm --dir frontend run check && pnpm --dir frontend run typecheck && pnpm --dir frontend test",
+		"check:api": "uv --directory backend run ruff check . && uv --directory backend run ruff format --check . && uv --directory backend run pytest -q",
+		"fix": "pnpm --dir frontend exec biome check --write . && uv --directory backend run ruff check --fix . && uv --directory backend run ruff format .",
 		"hooks:install": "lefthook install --reset-hooks-path",
 		"hooks:validate": "lefthook validate"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^19.0.0",
 		"@commitlint/config-conventional": "^19.0.0",
+		"concurrently": "^10.0.6",
 		"lefthook": "^2.2.2"
 	},
 	"pnpm": {
