@@ -19,8 +19,8 @@ COPY pyproject.toml ./
 # If uv.lock exists it will be copied, otherwise uv sync resolves
 COPY uv.lock* ./
 
-# Sync production dependencies (excluding dev dependencies)
-RUN uv pip install --system -r <(uv pip compile pyproject.toml) || uv pip install --system .
+# Install production dependencies from pyproject.toml
+RUN uv pip install --system .
 
 # Stage 2: Final lightweight runtime container
 FROM python:3.12-slim AS runner
