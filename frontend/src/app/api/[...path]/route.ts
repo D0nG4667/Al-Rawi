@@ -1,12 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL =
-	process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
+	process.env.NEXT_PUBLIC_API_URL ||
+	process.env.NEXT_PUBLIC_BACKEND_URL ||
+	"http://127.0.0.1:8000";
 
 async function handleProxy(
 	request: NextRequest,
 	{ params }: { params: Promise<{ path: string[] }> },
-) {
+): Promise<NextResponse> {
 	const { path } = await params;
 	const pathStr = path.join("/");
 

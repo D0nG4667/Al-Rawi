@@ -33,7 +33,7 @@ if (
 	});
 }
 
-export async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
 	const pathname = request.nextUrl.pathname;
 
 	// Edge rate limiting on specific resource-intensive API routes
@@ -59,6 +59,11 @@ export async function proxy(request: NextRequest) {
 				},
 			});
 		}
+	}
+
+	// Do not run next-intl locale middleware on API routes
+	if (pathname.startsWith("/api")) {
+		return NextResponse.next();
 	}
 
 	// Execute next-intl routing and locale redirection
