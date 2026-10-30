@@ -1,0 +1,45 @@
+# Lefthook — fast, parallel, staged-only git hooks for the Al-Rawi monorepo.
+# Docs: https://lefthook.dev
+# Personal overrides: create an untracked `lefthook-local.yml`.
+# Emergency bypass (CI stays authoritative): `LEFTHOOK=0 git commit ...`
+
+pre-commit:
+  parallel: true
+  commands:
+    frontend-biome:
+      root: "frontend/"
+      glob: "*.{js,jsx,ts,tsx,mjs,cjs,json,jsonc,css}"
+      run: pnpm exec biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
+      stage_fixed: true
+
+    backend-ruff:
+      root: "backend/"
+      glob: "*.py"
+      run: uv run ruff check --fix {staged_files} && uv run ruff format {staged_files}
+      stage_fixed: true
+
+    secrets-gitleaks:
+      run: sh scripts/hooks/gitleaks.sh
+
+commit-msg:
+  commands:
+    commitlint:
+      run: pnpm exec commitlint --edit {1}
+
+pre-push:
+  parallel: true
+  commands:
+    frontend-typecheck:
+      root: "frontend/"
+      glob: "*.{ts,tsx}"
+      run: pnpm exec tsc --noEmit
+
+    frontend-tests:
+      root: "frontend/"
+      glob: "*.{js,jsx,ts,tsx,json}"
+      run: pnpm test
+
+    backend-tests:
+      root: "backend/"
+      glob: "*.{py,toml}"
+      run: uv run pytest -q
