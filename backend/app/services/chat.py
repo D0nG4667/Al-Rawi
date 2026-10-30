@@ -90,7 +90,7 @@ async def retrieve_rag_context(
     embeddings: GoogleGenerativeAIEmbeddings,
     database_url: str,
     collection_name: str,
-) -> List[Dict[str, Any]]:
+) -> List[Any]:
     """Retrieves document chunks matching the semantic query from Neon PostgreSQL."""
     vectorstore = PGVector(
         embeddings=embeddings,
@@ -120,7 +120,9 @@ def compress_retrieved_documents(docs: List[Any]) -> str:
 
 
 async def execute_chat_query(
-    query: str, api_key: Optional[str] = None
+    query: str,
+    api_key: Optional[str] = None,
+    persona: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Processes RAG queries using semantic caching, vector retrieval, and model failovers."""
     # 0. Safety Guardrail Check
@@ -164,8 +166,14 @@ async def execute_chat_query(
     context = compress_retrieved_documents(docs)
 
     # 5. Formulate Prompt
+    persona_instruction = (
+        "Adopt a scholarly, academic historian tone with precise archaeological terminology and citations."
+        if (persona and persona.upper() == "ACADEMIC")
+        else "Adopt an engaging, warm, narrative storyteller tone worthy of a traditional Arabian Rawi."
+    )
     prompt = (
         "You are Al-Rawi, the Saudi Heritage & Tourism AI Oracle.\n"
+        f"{persona_instruction}\n"
         "Use the following context to answer the user question. If the context doesn't contain the answer, "
         "use your knowledge about Saudi heritage to answer, but state clearly that it is from general knowledge.\n\n"
         f"Context:\n{context}\n\n"

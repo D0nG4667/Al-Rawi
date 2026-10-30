@@ -12,6 +12,7 @@ class ChatRequest(BaseModel):
     query: str
     api_key: Optional[str] = None
     session_id: Optional[str] = None
+    persona: Optional[str] = None
 
 
 class ChatResponse(BaseModel):
@@ -22,12 +23,21 @@ class ChatResponse(BaseModel):
 
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(request: ChatRequest):
+async def chat_endpoint(request: ChatRequest) -> Dict[str, Any]:
     if not request.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty")
 
     try:
-        result = await execute_chat_query(query=request.query, api_key=request.api_key)
+        if request.persona:
+            result = await execute_chat_query(
+                query=request.query,
+                api_key=request.api_key,
+                persona=request.persona,
+            )
+        else:
+            result = await execute_chat_query(
+                query=request.query, api_key=request.api_key
+            )
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

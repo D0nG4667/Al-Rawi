@@ -1,7 +1,7 @@
 import os
 import re
 import urllib.parse
-from typing import Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import httpx
 from fastapi import (
@@ -16,6 +16,7 @@ from fastapi import (
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
+from app.core.config import get_settings
 from app.services.ingestion import process_pdf
 
 router = APIRouter()
@@ -91,7 +92,7 @@ async def verify_url_headers(url: str) -> Tuple[bool, str]:
     return True, ""
 
 
-async def ingest_url_fallback(url: str, api_key: str):
+async def ingest_url_fallback(url: str, api_key: str) -> None:
     """Fallback ingestion runner using FastAPI background tasks thread."""
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
@@ -111,13 +112,21 @@ async def ingest_url_fallback(url: str, api_key: str):
 
 
 @router.post("/upload")
-async def upload_document(file: UploadFile = File(...), api_key: str = Form(...)):
-    if not file.filename.endswith(".pdf"):
+async def upload_document(
+    file: UploadFile = File(...), api_key: Optional[str] = Form(None)
+) -> Dict[str, Any]:
+    if not file.filename or not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported")
+
+    resolved_key = api_key or get_settings().GOOGLE_API_KEY
+    if not resolved_key:
+        raise HTTPException(status_code=400, detail="API key is required")
 
     try:
         contents = await file.read()
-        result = await run_in_threadpool(process_pdf, contents, file.filename, api_key)
+        result = await run_in_threadpool(
+            process_pdf, contents, file.filename, resolved_key
+        )
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -128,9 +137,13 @@ async def request_document(
     request_data: DocumentRequest,
     request: Request,
     background_tasks: BackgroundTasks,
-):
+) -> Dict[str, Any]:
     url = request_data.url.strip()
-    api_key = request_data.api_key or request.headers.get("x-api-key")
+    api_key = (
+        request_data.api_key
+        or request.headers.get("x-api-key")
+        or get_settings().GOOGLE_API_KEY
+    )
     if not api_key:
         raise HTTPException(status_code=400, detail="API key is required")
 
