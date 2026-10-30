@@ -75,3 +75,10 @@
 ## Phase 6: Final Integration, Verification & Deployment
 - [x] Task 34: Production Docker Containerization (`backend/Dockerfile`), Render Blueprint (`render.yaml`), and GitHub Actions CI/CD (`deploy.yml`, `ci.yml`) (commits 87e7fc6..HEAD, review clean)
 - [x] Task 35: End-to-End Integration Wiring (Proxy Route Bypass, Persona Forwarding, Interactive PDF Ingestion, Live Admin Telemetry, & Full Test Verification) (commits 87e7fc6..HEAD, review clean)
+
+## Phase 7: DevOps & Developer Experience Platform (2026-10-30)
+- [x] Task 36: Lefthook git hooks replacing Husky + lint-staged (staged-only Biome, Ruff, gitleaks, commitlint, path-filtered pre-push)
+- [x] Task 37: Toolchain pins (.node-version, .python-version, packageManager), .editorconfig, .gitattributes LF normalization, shared VS Code config
+- [x] Task 38: Local stack (docker-compose pgvector + Redis, root dev/check/fix scripts) and Dev Container
+- [x] Task 39: Consolidated CI (path filters, caching, coverage, Docker build + Trivy + GHCR, PR hygiene, gitleaks, CI success gate)
+- [x] Task 40: CodeQL, release-please, Dependabot, Neon preview DB workflow, PR/issue templates, CODEOWNERS, CONTRIBUTING

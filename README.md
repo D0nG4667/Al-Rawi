@@ -75,59 +75,53 @@ Al-Rawi/
 │   ├── app/api/v1/         # REST endpoints (chat, documents, mindmap, podcast, admin)
 │   ├── app/services/       # RAG, ingestion, guardrails, mindmap, podcast, storage
 │   └── tests/              # Pytest unit, RLS, safety, and RAGAS evaluation suite (41 tests)
-├── docs/                   # PRD, C4 Architecture, ERD, OpenAPI Spec, & Superpowers SDD Plans
-├── PROMPTS.md              # System prompts, RAG templates, and guardrail policies
-└── render.yaml             # Infrastructure-as-Code blueprint for Render deployment
+├── docs/                   # PRD, C4 architecture, ERD, API contracts, data flow & design specs
+├── docker/                 # Local service init scripts (pgvector extension)
+├── .devcontainer/          # Codespaces / Dev Container definition
+├── .github/                # CI, CodeQL, release-please, Dependabot, templates & CODEOWNERS
+├── docker-compose.yml      # Local Postgres (pgvector) + Redis
+├── lefthook.yml            # Git hooks: Biome, Ruff, gitleaks, commitlint, pre-push tests
+├── package.json            # Root developer scripts (dev, check, fix, services:*)
+└── PROMPTS.md              # System prompts, RAG templates, and guardrail policies
 ```
 
 ---
 
 ## Quick Start
 
-### 1. Backend Setup (`backend/`)
+> Prefer zero setup? Open the repo in **GitHub Codespaces** or a **VS Code Dev Container**.
+> Full details live in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
-cd backend
-uv sync --all-extras --dev
-cp .env.example .env
-# Populate GOOGLE_API_KEY, DATABASE_URL, and REDIS_URL in .env
-
-# Start the FastAPI server
-uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### 2. Frontend Setup (`frontend/`)
-
-```bash
-cd frontend
-pnpm install
-cp .env.example .env.local
-
-# Start the Next.js development server
-pnpm dev
+corepack enable                 # pnpm version comes from packageManager
+pnpm install                    # root tooling + Lefthook git hooks
+pnpm bootstrap                  # frontend deps + backend virtualenv (uv)
+cp backend/.env.example backend/.env           # add GOOGLE_API_KEY
+cp frontend/.env.example frontend/.env.local
+pnpm services:up                # Postgres (pgvector) + Redis via Docker
+pnpm dev                        # FastAPI :8000 + Next.js :3000
 ```
 
 Open `http://localhost:3000` to launch the Al-Rawi experience.
 
 ---
 
-## Verification & Quality Gates
+## Developer Experience & CI/CD
 
-### Backend Checks
-```bash
-cd backend
-uv run ruff check .
-uv run ruff format --check .
-uv run pytest tests/ -v
-```
+| Layer | Tooling |
+|---|---|
+| Toolchain pins | `.node-version` (22), `.python-version` (3.12), `packageManager: pnpm@10.23.0` |
+| Git hooks | [Lefthook](lefthook.yml): staged-only Biome + Ruff + gitleaks (`pre-commit`), commitlint (`commit-msg`), tsc + tests (`pre-push`) |
+| Local stack | `docker-compose.yml`, root `pnpm dev` / `check` / `fix` scripts, Dev Container |
+| CI | [`ci.yml`](.github/workflows/ci.yml): path-filtered frontend & backend jobs, coverage, Docker build with GHA cache, Trivy scan, GHCR publish on `main`, single `CI success` gate |
+| Security | CodeQL (JS/TS + Python), gitleaks, dependency review, least-privilege workflow permissions |
+| Releases & deps | release-please (changelog, semver tags), grouped Dependabot updates, Neon preview DB per PR |
 
-### Frontend Checks
+### Quality Gates
+
 ```bash
-cd frontend
-pnpm format:check
-pnpm lint
-pnpm test
-pnpm exec tsc --noEmit
+pnpm check        # Biome ci, tsc, frontend tests, Ruff lint + format, pytest
+pnpm fix          # auto-fix both stacks
 ```
 
 ---
@@ -135,9 +129,12 @@ pnpm exec tsc --noEmit
 ## Documentation Index
 
 - [Product Requirements Document (PRD)](docs/product/PRD.md)
-- [C4 System Architecture](docs/architecture/c4-architecture.md)
-- [Entity-Relationship Diagram (ERD)](docs/architecture/erd.md)
-- [OpenAPI 3.1 Specification](docs/architecture/openapi.yaml)
+- [C4 System Architecture](docs/architecture/SYSTEM_C4.md)
+- [Entity-Relationship Diagram (ERD)](docs/architecture/DATABASE_ERD.md)
+- [API Contracts](docs/architecture/API_CONTRACTS.md)
+- [Data Flow](docs/architecture/DATA_FLOW.md)
+- [Git Workflow](docs/architecture/GIT_WORKFLOW.md)
+- [Contributing Guide](CONTRIBUTING.md)
 - [System Prompts & Guardrail Engineering](PROMPTS.md)
 - [Frontend Workspace Documentation](frontend/README.md)
 - [Backend Workspace Documentation](backend/README.md)

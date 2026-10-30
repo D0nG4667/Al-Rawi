@@ -1,0 +1,12 @@
+# Code owners are automatically requested for review on matching paths.
+# https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+*                       @D0nG4667
+
+/frontend/              @D0nG4667
+/backend/               @D0nG4667
+/.github/               @D0nG4667
+/docker-compose.yml     @D0nG4667
+/lefthook.yml           @D0nG4667
+/docs/                  @D0nG4667
+/PROMPTS.md             @D0nG4667
