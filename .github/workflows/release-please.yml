@@ -16,7 +16,15 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: googleapis/release-please-action@v5
+      - id: release
+        uses: googleapis/release-please-action@v4
+        continue-on-error: true
         with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      - name: Warn if repository PR creation permission is disabled
+        if: steps.release.outcome == 'failure'
+        run: |
+          echo "::warning title=Release Please PR permission required::Enable 'Allow GitHub Actions to create and approve pull requests' under Settings -> Actions -> General -> Workflow permissions (or add a RELEASE_PLEASE_TOKEN repository secret)."

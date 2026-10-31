@@ -3,17 +3,9 @@
 	"version": "1.0.0",
 	"private": true,
 	"description": "Al-Rawi monorepo tooling: git hooks, commit conventions and cross-stack developer scripts",
-	"devEngines": {
-		"runtime": {
-			"name": "node",
-			"version": ">=24.0.0",
-			"onFail": "download"
-		},
-		"packageManager": {
-			"name": "pnpm",
-			"version": ">=10.23.0",
-			"onFail": "download"
-		}
+	"packageManager": "pnpm@10.23.0",
+	"engines": {
+		"node": ">=26.0.0"
 	},
 	"scripts": {
 		"prepare": "lefthook install",

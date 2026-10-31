@@ -61,7 +61,7 @@ jobs:
           printf '%s' "$DATABASE_URL" | npx -y vercel@latest env add DATABASE_URL preview "$GIT_BRANCH" \
             --token="$VERCEL_TOKEN" --scope="$VERCEL_ORG_ID" --force || true
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           cache-dependency-glob: backend/uv.lock
