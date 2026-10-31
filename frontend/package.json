@@ -23,7 +23,7 @@
 		"@react-three/drei": "^10.7.7",
 		"@react-three/fiber": "^9.6.1",
 		"@react-three/postprocessing": "^3.0.4",
-		"@sentry/nextjs": "^10.62.0",
+		"@sentry/nextjs": "^11.9.0",
 		"@studio-freight/lenis": "^1.0.42",
 		"@upstash/ratelimit": "^2.0.8",
 		"@upstash/redis": "^1.38.0",
