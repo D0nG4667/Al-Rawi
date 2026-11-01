@@ -1,9 +1,9 @@
 # Al-Rawi UI/UX Heritage Moat — Design Specification
 
 - **Date:** 2026-10-31
-- **Status:** Approved
-- **Branch:** `feat/ui-ux-heritage-moat`
-- **Scope:** Sub-project 1 (Design Foundation & Dual Theme System) + Sub-project 3 (Canvas-First Explore Workspace Redesign)
+- **Status:** Completed (`milestone/phase-8-ui-ux-moat`)
+- **Branch:** Merged into `main`
+- **Scope:** Sub-projects 1–4 (Design Foundation, 3D UNESCO Monuments & Hotspots, Canvas-First Explore Workspace, Admin Command Center & OG/PWA Polish)
 
 ---
 
