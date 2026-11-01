@@ -1,7 +1,6 @@
 ---
 trigger: glob
-globs:
-  - "backend/**"
+globs: "backend/**"
 description: Backend FastAPI, LangGraph multi-agent orchestration, pgvector hybrid RAG, security, and pytest performance standards.
 ---
 

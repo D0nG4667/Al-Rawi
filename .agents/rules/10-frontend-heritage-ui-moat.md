@@ -1,7 +1,6 @@
 ---
 trigger: glob
-globs:
-  - "frontend/**"
+globs: "frontend/**"
 description: Frontend UI/UX Heritage Moat design tokens, dual-theme rules, 3D WebGL spatial canvas architecture, bilingual RTL parity, and Biome v2 standards.
 ---
 

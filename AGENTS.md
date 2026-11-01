@@ -8,8 +8,8 @@
 # Workspace Agent Rules (`.agents/rules/`)
 Specialized AI-native engineering rules are organized with progressive disclosure in `.agents/rules/`:
 - [`.agents/rules/00-architecture-and-ai-engineering.md`](.agents/rules/00-architecture-and-ai-engineering.md) (`always_on`): Context7 documentation-first protocol, strict TypeScript/Python typing, and monorepo boundaries.
-- [`.agents/rules/10-frontend-heritage-ui-moat.md`](.agents/rules/10-frontend-heritage-ui-moat.md) (`globs: ["frontend/**"]`): Dual-theme tokens, bilingual `en`/`ar` RTL parity, canvas-first 3D monument architecture, and Biome v2 standards.
-- [`.agents/rules/20-backend-rag-and-langgraph.md`](.agents/rules/20-backend-rag-and-langgraph.md) (`globs: ["backend/**"]`): Async SQLAlchemy 2.0 + `pgvector`, grounded LangGraph citations, SSRF/RBAC security, and fast mocked `pytest` execution.
+- [`.agents/rules/10-frontend-heritage-ui-moat.md`](.agents/rules/10-frontend-heritage-ui-moat.md) (`globs: "frontend/**"`): Dual-theme tokens, bilingual `en`/`ar` RTL parity, canvas-first 3D monument architecture, and Biome v2 standards.
+- [`.agents/rules/20-backend-rag-and-langgraph.md`](.agents/rules/20-backend-rag-and-langgraph.md) (`globs: "backend/**"`): Async SQLAlchemy 2.0 + `pgvector`, grounded LangGraph citations, SSRF/RBAC security, and fast mocked `pytest` execution.
 - [`.agents/rules/30-devops-ci-and-git-workflow.md`](.agents/rules/30-devops-ci-and-git-workflow.md) (`always_on`): Node 26 LTS / Python 3.12 toolchain lockfile hygiene, verified GitHub Actions tag pinning, Trunk-Based Development, and Conventional Commits (`<= 100` chars).
 
 # Base Data Source
