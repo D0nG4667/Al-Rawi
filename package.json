@@ -1,6 +1,6 @@
 {
 	"name": "al-rawi",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"private": true,
 	"description": "Al-Rawi monorepo tooling: git hooks, commit conventions and cross-stack developer scripts",
 	"packageManager": "pnpm@10.23.0",
