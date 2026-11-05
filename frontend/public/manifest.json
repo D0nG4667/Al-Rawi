@@ -2,7 +2,7 @@
 	"name": "Al-Rawi | الراوي",
 	"short_name": "Al-Rawi",
 	"description": "Illuminated Saudi Architectural Heritage & AI Oracle",
-	"start_url": "/",
+	"start_url": "/en/explore",
 	"display": "standalone",
 	"background_color": "#0E1020",
 	"theme_color": "#D9A441",

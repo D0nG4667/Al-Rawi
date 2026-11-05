@@ -1,17 +1,10 @@
-import ExploreDashboard from "@/components/ui/ExploreDashboard";
-import SupportButton from "@/components/ui/SupportButton";
+import { redirect } from "next/navigation";
 
 export default async function Home({
 	params,
 }: {
 	params: Promise<{ locale: string }>;
-}): Promise<React.ReactElement> {
+}): Promise<never> {
 	const { locale } = await params;
-
-	return (
-		<main className="relative h-dvh overflow-hidden">
-			<SupportButton />
-			<ExploreDashboard locale={locale} />
-		</main>
-	);
+	redirect(`/${locale}/explore`);
 }

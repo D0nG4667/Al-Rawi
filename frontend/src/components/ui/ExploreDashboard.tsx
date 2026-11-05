@@ -25,25 +25,30 @@ import { useGeofence } from "@/hooks/useGeofence";
 import { useSoundDesign } from "@/hooks/useSoundDesign";
 import { speakWithBrowserVoice, stopBrowserVoice } from "@/lib/browserVoice";
 import { buildDemoMajlisScript } from "@/lib/demo/demoMajlis";
+import type { ExploreParams } from "@/lib/exploreParams";
 import { askOracle, OracleRequestError } from "@/lib/oracleClient";
 import { useUIStore } from "@/store/useUIStore";
 
 interface ExploreDashboardProps {
 	locale: string;
+	initialParams?: ExploreParams;
 }
 
 export default function ExploreDashboard({
 	locale,
+	initialParams,
 }: ExploreDashboardProps): React.ReactElement {
 	// Activate geolocation-based UNESCO geofencing
 	useGeofence();
 
 	// Global UI Store
 	const persona = useUIStore((state) => state.persona);
+	const setPersona = useUIStore((state) => state.setPersona);
 	const setAIThinking = useUIStore((state) => state.setAIThinking);
 	const activeDrawer = useUIStore((state) => state.activeDrawer);
 	const setActiveDrawer = useUIStore((state) => state.setActiveDrawer);
 	const activeSite = useUIStore((state) => state.activeSite);
+	const setActiveSite = useUIStore((state) => state.setActiveSite);
 	const tDemo = useTranslations("Demo");
 	const langKey: "en" | "ar" = locale === "ar" ? "ar" : "en";
 
@@ -98,6 +103,16 @@ export default function ExploreDashboard({
 		}, 1200);
 		return () => clearTimeout(timer);
 	}, []);
+
+	// Apply validated deep-link params once (/explore?site=&persona=&q=)
+	const appliedParamsRef = useRef(false);
+	useEffect(() => {
+		if (appliedParamsRef.current || !initialParams) return;
+		appliedParamsRef.current = true;
+		if (initialParams.site) setActiveSite(initialParams.site);
+		if (initialParams.persona) setPersona(initialParams.persona);
+		if (initialParams.query) setChatInput(initialParams.query);
+	}, [initialParams, setActiveSite, setPersona]);
 
 	// Global keyboard navigation: Cmd/Ctrl+K (focus prompt), [ (Archive), ] (Oracle), Esc (close sheets)
 	useEffect(() => {

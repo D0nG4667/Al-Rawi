@@ -216,7 +216,7 @@ export default function ExploreTopBar({
 
 					{/* Locale Switcher */}
 					<a
-						href={`/${switchLocale}`}
+						href={`/${switchLocale}/explore`}
 						className="text-xs bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] rounded-xl px-3 py-2 text-[var(--text-primary)] transition-all font-semibold"
 					>
 						{switchLabel}

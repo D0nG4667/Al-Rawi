@@ -17,7 +17,11 @@ try {
 		"standalone",
 		"Display mode must be standalone",
 	);
-	assert.strictEqual(manifest.start_url, "/", "Start URL must be root");
+	assert.strictEqual(
+		manifest.start_url,
+		"/en/explore",
+		"Start URL must open the workspace",
+	);
 	console.log("✓ Success: PWA manifest.json keys are fully valid!");
 
 	process.exit(0);
