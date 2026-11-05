@@ -86,5 +86,23 @@
 		"footerBody": "No account or setup needed. The demo archive works straight away.",
 		"license": "Licensed under CC BY-NC 4.0",
 		"repository": "Source code"
+	},
+	"Tour": {
+		"stepCounter": "Step {current} of {total}",
+		"siteTitle": "Choose a heritage site",
+		"siteBody": "Pick At-Turaif, Hegra or Historic Jeddah. The camera flies to the monument and the suggested questions change.",
+		"personaTitle": "Pick your narrator",
+		"personaBody": "The Storyteller tells history as a story. The Scholar answers with archival precision.",
+		"askTitle": "Ask the Oracle",
+		"askBody": "Type a question in Arabic or English, or tap one of the suggested inquiries.",
+		"citeTitle": "Check the source",
+		"citeBody": "Every answer lists its sources. Tap a citation to read the excerpt and open the original record.",
+		"waiting": "The Oracle is composing an answer…",
+		"next": "Next",
+		"back": "Back",
+		"skip": "Skip tour",
+		"finish": "Start exploring",
+		"askForMe": "Ask for me",
+		"restart": "Show the guided tour"
 	}
 }

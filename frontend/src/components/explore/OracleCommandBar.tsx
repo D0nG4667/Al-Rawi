@@ -49,7 +49,10 @@ export default function OracleCommandBar({
 	return (
 		<div className="w-full max-w-2xl mx-auto flex flex-col gap-2.5 pointer-events-auto">
 			{/* Contextual Heritage Starter Prompts */}
-			<div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+			<div
+				data-tour="starter-chips"
+				className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar"
+			>
 				{starterPrompts.map((prompt) => (
 					<button
 						key={prompt}

@@ -3,6 +3,7 @@
 import {
 	Archive,
 	Compass,
+	HelpCircle,
 	MapPin,
 	Moon,
 	ScrollText,
@@ -28,6 +29,7 @@ interface ExploreTopBarProps {
 	onOpenMap: () => void;
 	onSummonMajlis: () => void;
 	onInteractionSound: () => void;
+	onStartTour: () => void;
 }
 
 const SITE_ORDER: HeritageSiteId[] = ["diriyah", "hegra", "jeddah"];
@@ -40,9 +42,11 @@ export default function ExploreTopBar({
 	onOpenMap,
 	onSummonMajlis,
 	onInteractionSound,
+	onStartTour,
 }: ExploreTopBarProps): React.ReactElement {
 	const tCommon = useTranslations("Common");
 	const tDash = useTranslations("Dashboard");
+	const tTour = useTranslations("Tour");
 
 	const theme = useUIStore((state) => state.theme);
 	const toggleTheme = useUIStore((state) => state.toggleTheme);
@@ -96,6 +100,7 @@ export default function ExploreTopBar({
 				{/* UNESCO Site Teleporter Pills */}
 				<nav
 					aria-label="UNESCO World Heritage Sites"
+					data-tour="site-teleporter"
 					className="hidden lg:flex items-center gap-1 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl p-1"
 				>
 					{SITE_ORDER.map((siteId) => {
@@ -125,7 +130,7 @@ export default function ExploreTopBar({
 
 				{/* Right Controls: Persona, Drawers, Map, Majlis, Theme, Locale */}
 				<div className="flex items-center gap-2 flex-wrap">
-					<div className="hidden xl:block">
+					<div className="hidden xl:block" data-tour="persona-pill">
 						<PersonaSelector compact />
 					</div>
 
@@ -186,6 +191,20 @@ export default function ExploreTopBar({
 					>
 						<Sparkles className="w-3.5 h-3.5" />
 						<span className="hidden sm:inline">{tDash("majlisTrigger")}</span>
+					</button>
+
+					{/* Guided Tour Trigger */}
+					<button
+						type="button"
+						onClick={() => {
+							onInteractionSound();
+							onStartTour();
+						}}
+						aria-label={tTour("restart")}
+						title={tTour("restart")}
+						className="p-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[var(--accent-gold)] transition-all cursor-pointer"
+					>
+						<HelpCircle className="w-4 h-4" aria-hidden="true" />
 					</button>
 
 					{/* Dual Heritage Theme Switcher */}

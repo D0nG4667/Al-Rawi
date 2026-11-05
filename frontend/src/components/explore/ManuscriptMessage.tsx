@@ -140,6 +140,7 @@ export default function ManuscriptMessage({
 								<button
 									key={src.id}
 									type="button"
+									data-tour={idx === 0 ? "citation-chip" : undefined}
 									onClick={() => onSelectSource(src, idx)}
 									className="text-[10px] font-mono-tabular heritage-chip rounded-lg px-2.5 py-1 flex items-center gap-1.5 cursor-pointer font-semibold"
 								>

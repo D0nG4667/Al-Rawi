@@ -19,15 +19,17 @@ import type {
 	PodcastScript,
 	UploadedDoc,
 } from "@/components/explore/types";
+import GuidedTour from "@/components/onboarding/GuidedTour";
 import HeritageOrnament from "@/components/ui/HeritageOrnament";
 import MindMap from "@/components/ui/MindMap";
 import { useGeofence } from "@/hooks/useGeofence";
+import { useGuidedTour } from "@/hooks/useGuidedTour";
 import { useSoundDesign } from "@/hooks/useSoundDesign";
 import { speakWithBrowserVoice, stopBrowserVoice } from "@/lib/browserVoice";
 import { buildDemoMajlisScript } from "@/lib/demo/demoMajlis";
 import type { ExploreParams } from "@/lib/exploreParams";
 import { askOracle, OracleRequestError } from "@/lib/oracleClient";
-import { useUIStore } from "@/store/useUIStore";
+import { HERITAGE_SITES, useUIStore } from "@/store/useUIStore";
 
 interface ExploreDashboardProps {
 	locale: string;
@@ -96,6 +98,7 @@ export default function ExploreDashboard({
 
 	// Cinematic Entry Preloader State
 	const [isPreloading, setIsPreloading] = useState(true);
+	const tour = useGuidedTour(!isPreloading);
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -534,6 +537,7 @@ export default function ExploreDashboard({
 					}}
 					onSummonMajlis={handleSummonMajlis}
 					onInteractionSound={playClick}
+					onStartTour={tour.start}
 				/>
 
 				<div className="flex-1 flex items-center justify-start my-4 pointer-events-none">
@@ -643,6 +647,15 @@ export default function ExploreDashboard({
 				onGenerateAudio={handleGenerateAudio}
 				onTogglePlayPause={togglePlayPause}
 				onStopAudio={stopAudio}
+			/>
+
+			<GuidedTour
+				tour={tour}
+				onAskForMe={() =>
+					handleSendChat(
+						HERITAGE_SITES[activeSite].prompts[persona][langKey][0],
+					)
+				}
 			/>
 		</>
 	);

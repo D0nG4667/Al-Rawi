@@ -138,3 +138,20 @@ html[dir="rtl"] .font-display {
 		animation: none;
 	}
 }
+
+/* Guided tour spotlight: dims everything except the anchored element */
+.tour-spotlight {
+	box-shadow:
+		0 0 0 9999px rgba(8, 9, 18, 0.62),
+		0 0 0 2px var(--accent-gold);
+	transition:
+		top 0.3s ease,
+		left 0.3s ease,
+		width 0.3s ease,
+		height 0.3s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+	.tour-spotlight {
+		transition: none;
+	}
+}
