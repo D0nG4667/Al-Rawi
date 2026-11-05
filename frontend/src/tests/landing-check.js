@@ -1,4 +1,6 @@
 const assert = require("node:assert");
+const fs = require("node:fs");
+const path = require("node:path");
 const {
 	parseExploreParams,
 	MAX_QUERY_LENGTH,
@@ -64,6 +66,40 @@ try {
 		"Query is capped",
 	);
 	console.log("✓ Success: Explore deep-link parsing verified!");
+
+	const landingDir = path.resolve(__dirname, "../components/landing");
+	const required = [
+		"LandingHero.tsx",
+		"SiteTriptych.tsx",
+		"CapabilityScroll.tsx",
+		"TrustBand.tsx",
+		"AudienceCards.tsx",
+		"LandingFooter.tsx",
+	];
+	for (const file of required) {
+		const full = path.join(landingDir, file);
+		assert.ok(fs.existsSync(full), `Missing landing section ${file}`);
+		const source = fs.readFileSync(full, "utf8");
+		assert.ok(
+			!source.includes("@react-three") && !source.includes("<Canvas"),
+			`${file} must not load WebGL`,
+		);
+	}
+	const landingPage = fs.readFileSync(
+		path.resolve(__dirname, "../app/[locale]/page.tsx"),
+		"utf8",
+	);
+	for (const file of required) {
+		assert.ok(
+			landingPage.includes(file.replace(".tsx", "")),
+			`Landing page must render ${file}`,
+		);
+	}
+	assert.ok(
+		fs.existsSync(path.resolve(__dirname, "../app/[locale]/explore/page.tsx")),
+		"/explore route missing",
+	);
+	console.log("✓ Success: Landing page structure verified!");
 
 	console.log("✓ Success: Geolocation geofencing math checks pass!");
 	process.exit(0);

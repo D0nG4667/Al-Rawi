@@ -111,3 +111,30 @@ html[dir="rtl"] .font-display {
 .heritage-chip:hover {
 	border-color: var(--border-strong);
 }
+
+/* Landing page motion (transform-only so the hero stays an LCP candidate) */
+@keyframes landing-rise {
+	from {
+		transform: translateY(14px);
+	}
+	to {
+		transform: none;
+	}
+}
+@keyframes landing-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+.landing-rise {
+	animation: landing-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.landing-spin-slow {
+	animation: landing-spin 90s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+	.landing-rise,
+	.landing-spin-slow {
+		animation: none;
+	}
+}
