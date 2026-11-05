@@ -79,7 +79,8 @@ live response always wins. 4xx responses (e.g. invalid key) surface a localized 
 
 | File | Responsibility |
 |---|---|
-| `src/lib/demo/demoArchive.ts` | Typed bundled corpus `DemoEntry { id, site, persona, locale, prompt, keywords, answer, sources }`; ≥ 4 entries per site × persona × locale (≥ 48 total) |
+| `src/lib/demo/demoSources.ts` | The three verified UNESCO sources (`unesco-1329`, `unesco-1293`, `unesco-1361`) with title, URL, and a paraphrased summary |
+| `src/lib/demo/demoArchive.ts` | Typed bundled corpus of 24 bilingual entries `DemoEntry { id, site, persona, prompt: {en, ar} \| null, keywords, answer: {en, ar}, sourceKeys }`: per site × persona, one entry per existing starter prompt (3) plus one overview, i.e. ≥ 4 answers per site × persona × locale (48 total) |
 | `src/lib/demo/matchDemoAnswer.ts` | Pure `(query, site, persona, locale) => DemoEntry`: exact prompt match → keyword overlap (same site preferred) → site overview fallback |
 | `src/lib/oracleClient.ts` | `askOracle(payload, options): Promise<OracleResult>`; `OracleResult = { answer, sources, origin: "live" \| "demo" }` |
 | `src/components/explore/DemoBadge.tsx` | "Demo Archive · curated answers" pill shown in `OracleSheet` and `ExploreTopBar` whenever the last answer's origin is `demo` |
@@ -103,10 +104,15 @@ supported by those listings (inscription year, criteria, architecture, history).
 - PDF upload stays enabled, and on failure shows a localized message:
   "Connect the archive backend to ingest your own dossiers."
 
-### 3.5 Encoding fix
+### 3.5 Citation drawer links
 
-`frontend/messages/en.json` (and `ar.json` if affected) contain mojibake (`A�`) where `·` was
-intended. Replace with `·`.
+`CitationData` gains an optional `url?: string`. When present, `CitationDrawer` renders an
+"Open source" link (`target="_blank"`, `rel="noopener noreferrer"`) so reviewers can verify the
+UNESCO listing themselves.
+
+> Note: an earlier draft listed an encoding fix for `en.json`. Reading the file directly shows the
+> `·` characters are correct; the garbled output came from the PowerShell console, so no fix is
+> needed.
 
 ---
 
@@ -188,7 +194,8 @@ New/extended Node check scripts in `frontend/src/tests/`, wired into `pnpm test`
 | `demo-check.js` | ≥ 4 entries per site × persona × locale; every entry has ≥ 1 source with a `whc.unesco.org` URL; matcher returns exact matches and a fallback for unknown queries |
 | `landing-check.js` (extended) | Landing components exist; `/explore` route exists; `parseExploreParams` validates input |
 | `tour-check.js` | 4 steps; every `data-tour` anchor exists in components; every `Tour.*` key exists in both locales |
-| `i18n-check.js` (extended) | Key parity plus rejection of mojibake sequences (`A�`, `Ã`) |
+| `pwa-check.js` (updated) | `start_url` is `/en/explore` |
+| `i18n-check.js` (existing) | Key parity for the new `Landing`, `Tour`, and `Demo` namespaces |
 
 **Done when:**
 
