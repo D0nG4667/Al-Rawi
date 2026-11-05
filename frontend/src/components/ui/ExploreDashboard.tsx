@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Scene from "@/components/canvas/Scene";
 import CitationDrawer, {
@@ -22,6 +23,7 @@ import HeritageOrnament from "@/components/ui/HeritageOrnament";
 import MindMap from "@/components/ui/MindMap";
 import { useGeofence } from "@/hooks/useGeofence";
 import { useSoundDesign } from "@/hooks/useSoundDesign";
+import { askOracle, OracleRequestError } from "@/lib/oracleClient";
 import { useUIStore } from "@/store/useUIStore";
 
 interface ExploreDashboardProps {
@@ -39,6 +41,9 @@ export default function ExploreDashboard({
 	const setAIThinking = useUIStore((state) => state.setAIThinking);
 	const activeDrawer = useUIStore((state) => state.activeDrawer);
 	const setActiveDrawer = useUIStore((state) => state.setActiveDrawer);
+	const activeSite = useUIStore((state) => state.activeSite);
+	const tDemo = useTranslations("Demo");
+	const langKey: "en" | "ar" = locale === "ar" ? "ar" : "en";
 
 	// Modal states
 	const [isMapOpen, setIsMapOpen] = useState(false);
@@ -53,6 +58,9 @@ export default function ExploreDashboard({
 	// Chat states
 	const [chatInput, setChatInput] = useState("");
 	const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+	const lastOracleOrigin = [...chatHistory]
+		.reverse()
+		.find((msg) => msg.role === "oracle")?.origin;
 	const [isThinking, setIsThinking] = useState(false);
 	const [activeQuery, setActiveQuery] = useState("");
 	const commandInputRef = useRef<HTMLInputElement | null>(null);
@@ -215,60 +223,39 @@ export default function ExploreDashboard({
 		setAIThinking(true);
 
 		try {
-			const payload: {
-				query: string;
-				persona: string;
-				api_key?: string;
-			} = {
+			const result = await askOracle({
 				query,
 				persona,
-			};
-			if (apiKey.trim()) {
-				payload.api_key = apiKey.trim();
-			}
-
-			const res = await fetch("/api/chat", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(payload),
+				site: activeSite,
+				locale: langKey,
+				apiKey: apiKey.trim() || undefined,
 			});
-
-			if (!res.ok) {
-				throw new Error("Oracle is unresponsive.");
-			}
-
-			const data = await res.json();
-			const mappedSources: ChatSource[] = (data.sources || []).map(
-				(
-					src: { metadata?: Record<string, unknown>; snippet?: string },
-					i: number,
-				) => ({
-					...src,
-					id: `src-${i}-${Date.now()}`,
-				}),
-			);
 			setChatHistory((prev) => [
 				...prev,
 				{
 					id: `oracle-${Date.now()}`,
 					role: "oracle",
-					text: data.answer || "I could not resolve that.",
-					sources: mappedSources,
+					text: result.answer,
+					sources: result.sources,
+					origin: result.origin,
 					isNew: true,
 				},
 			]);
 			playChime();
 		} catch (error: unknown) {
-			const errorMessage =
-				error instanceof Error ? error.message : "Connection failed.";
+			const status = error instanceof OracleRequestError ? error.status : 0;
+			const message =
+				status === 401 || status === 403
+					? tDemo("errorAuth")
+					: status === 429
+						? tDemo("errorRateLimit")
+						: tDemo("errorGeneric");
 			setChatHistory((prev) => [
 				...prev,
 				{
 					id: `error-${Date.now()}`,
 					role: "oracle",
-					text: `Error: ${errorMessage}`,
+					text: message,
 					isNew: true,
 				},
 			]);
@@ -291,6 +278,8 @@ export default function ExploreDashboard({
 				typeof src.metadata?.page === "number"
 					? src.metadata.page
 					: undefined,
+			url: typeof src.metadata?.url === "string" ? src.metadata.url : undefined,
+			origin: src.metadata?.origin === "demo" ? "demo" : "live",
 		});
 		setIsCitationOpen(true);
 		playWhoosh();
@@ -495,6 +484,7 @@ export default function ExploreDashboard({
 			<div className="relative z-10 h-dvh w-full p-4 sm:p-6 flex flex-col justify-between pointer-events-none">
 				<ExploreTopBar
 					locale={locale}
+					isDemo={lastOracleOrigin === "demo"}
 					uploadedCount={uploadedDocs.length}
 					messageCount={chatHistory.length}
 					onOpenMap={() => {

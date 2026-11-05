@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type React from "react";
+import DemoBadge from "@/components/explore/DemoBadge";
 import HeritageOrnament from "@/components/ui/HeritageOrnament";
 import PersonaSelector from "@/components/ui/PersonaSelector";
 import {
@@ -21,6 +22,7 @@ import {
 
 interface ExploreTopBarProps {
 	locale: string;
+	isDemo: boolean;
 	uploadedCount: number;
 	messageCount: number;
 	onOpenMap: () => void;
@@ -32,6 +34,7 @@ const SITE_ORDER: HeritageSiteId[] = ["diriyah", "hegra", "jeddah"];
 
 export default function ExploreTopBar({
 	locale,
+	isDemo,
 	uploadedCount,
 	messageCount,
 	onOpenMap,
@@ -75,10 +78,14 @@ export default function ExploreTopBar({
 							<h1 className="text-lg font-display font-bold tracking-wide text-[var(--text-primary)]">
 								{tCommon("title")}
 							</h1>
-							<span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono-tabular px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-oasis)]">
-								<span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-oasis)] animate-pulse" />
-								{tCommon("oracleStatus")}
-							</span>
+							{isDemo ? (
+								<DemoBadge className="hidden sm:inline-flex" />
+							) : (
+								<span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono-tabular px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-oasis)]">
+									<span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-oasis)] animate-pulse" />
+									{tCommon("oracleStatus")}
+								</span>
+							)}
 						</div>
 						<p className="text-[11px] text-[var(--text-secondary)] hidden sm:block">
 							{tCommon("subtitle")}

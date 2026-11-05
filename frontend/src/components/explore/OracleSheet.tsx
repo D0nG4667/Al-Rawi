@@ -4,6 +4,7 @@ import { Compass, ScrollText, Sparkles, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type React from "react";
 import ThinkingStep from "@/components/chat/ThinkingStep";
+import DemoBadge from "@/components/explore/DemoBadge";
 import ManuscriptMessage from "@/components/explore/ManuscriptMessage";
 import type { ChatMessage, ChatSource } from "@/components/explore/types";
 import HeritageOrnament from "@/components/ui/HeritageOrnament";
@@ -45,6 +46,10 @@ export default function OracleSheet({
 	const siteTitle = locale === "ar" ? siteMeta.titleAr : siteMeta.titleEn;
 	const starterPrompts =
 		siteMeta.prompts[persona][locale === "ar" ? "ar" : "en"];
+	const lastOracle = [...chatHistory]
+		.reverse()
+		.find((m) => m.role === "oracle");
+	const showDemoBadge = lastOracle?.origin === "demo";
 
 	return (
 		<aside
@@ -66,6 +71,7 @@ export default function OracleSheet({
 						<p className="text-[10px] font-mono-tabular uppercase tracking-widest text-[var(--accent-gold)]">
 							{siteTitle} · {siteMeta.unescoRef}
 						</p>
+						{showDemoBadge && <DemoBadge className="mt-1" />}
 					</div>
 				</div>
 

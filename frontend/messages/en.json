@@ -27,5 +27,16 @@
 		"emptyChronicleBody": "Select a UNESCO site in the top bar or choose an inquiry below to consult primary archaeological and historical records.",
 		"verifiedSources": "Verified Archival Citations",
 		"keyboardHint": "Press [ for Archive · ] for Chronicle · Esc for Pure Canvas"
+	},
+	"Demo": {
+		"badge": "Demo Archive",
+		"badgeTooltip": "Curated answers from verified UNESCO listings. Connect the archive backend for live research.",
+		"errorAuth": "The Oracle rejected the API key. Check your Gemini key and try again.",
+		"errorRateLimit": "Too many inquiries in a short time. Please wait a few seconds and ask again.",
+		"errorGeneric": "The Oracle could not answer this inquiry. Please try again.",
+		"openSource": "Open source",
+		"curatedProvenance": "Curated demo citation · verify on the official UNESCO listing",
+		"uploadUnavailable": "Connect the archive backend to ingest your own dossiers.",
+		"audioFallback": "Playing with your browser's built-in voice because the narration service is unavailable."
 	}
 }

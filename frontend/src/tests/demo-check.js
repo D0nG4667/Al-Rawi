@@ -116,8 +116,83 @@ try {
 		"ChatSource carries the UNESCO url",
 	);
 
-	console.log("✓ Success: Demo Archive corpus and matcher verified!");
-	process.exit(0);
+	const { askOracle, OracleRequestError } = require("../lib/oracleClient.ts");
+	const request = {
+		query: withPrompt.prompt.en,
+		persona: withPrompt.persona,
+		site: withPrompt.site,
+		locale: "en",
+	};
+	const jsonResponse = (status, body) =>
+		new Response(JSON.stringify(body), {
+			status,
+			headers: { "Content-Type": "application/json" },
+		});
+
+	(async () => {
+		const networkDown = await askOracle(request, {
+			demoMode: "off",
+			fetchImpl: async () => {
+				throw new TypeError("fetch failed");
+			},
+		});
+		assert.strictEqual(networkDown.origin, "demo", "Network error -> demo");
+		assert.strictEqual(networkDown.answer, withPrompt.answer.en);
+
+		const serverError = await askOracle(request, {
+			demoMode: "off",
+			fetchImpl: async () => jsonResponse(503, { detail: "down" }),
+		});
+		assert.strictEqual(serverError.origin, "demo", "5xx -> demo");
+
+		const timedOut = await askOracle(request, {
+			demoMode: "off",
+			timeoutMs: 20,
+			fetchImpl: (_url, init) =>
+				new Promise((_resolve, reject) => {
+					init.signal.addEventListener("abort", () =>
+						reject(new DOMException("aborted", "AbortError")),
+					);
+				}),
+		});
+		assert.strictEqual(timedOut.origin, "demo", "Timeout -> demo");
+
+		const live = await askOracle(request, {
+			demoMode: "off",
+			fetchImpl: async () =>
+				jsonResponse(200, {
+					answer: "Live answer",
+					sources: [{ metadata: { source: "Dossier", page: 4 }, snippet: "x" }],
+				}),
+		});
+		assert.strictEqual(live.origin, "live", "200 -> live");
+		assert.strictEqual(live.answer, "Live answer");
+		assert.strictEqual(live.sources[0].metadata.page, 4);
+
+		await assert.rejects(
+			askOracle(request, {
+				demoMode: "off",
+				fetchImpl: async () => jsonResponse(401, { detail: "bad key" }),
+			}),
+			(err) => err instanceof OracleRequestError && err.status === 401,
+			"4xx -> OracleRequestError",
+		);
+
+		const forced = await askOracle(request, {
+			demoMode: "always",
+			fetchImpl: async () => {
+				throw new Error("must not be called");
+			},
+		});
+		assert.strictEqual(forced.origin, "demo", "demoMode=always skips network");
+
+		console.log("✓ Success: Demo Archive corpus, matcher and client verified!");
+		process.exit(0);
+	})().catch((err) => {
+		console.error("✗ Failure: Demo Archive check failed!");
+		console.error(err.message);
+		process.exit(1);
+	});
 } catch (err) {
 	console.error("✗ Failure: Demo Archive check failed!");
 	console.error(err.message);

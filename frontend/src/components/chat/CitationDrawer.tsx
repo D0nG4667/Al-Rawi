@@ -1,6 +1,14 @@
 "use client";
 
-import { BookOpenCheck, Calendar, FileText, Shield, X } from "lucide-react";
+import {
+	BookOpenCheck,
+	Calendar,
+	ExternalLink,
+	FileText,
+	Shield,
+	X,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
 import HeritageOrnament from "@/components/ui/HeritageOrnament";
 
 export interface CitationData {
@@ -8,6 +16,8 @@ export interface CitationData {
 	content: string;
 	page?: number | string;
 	score?: number;
+	url?: string;
+	origin?: "live" | "demo";
 }
 
 interface CitationDrawerProps {
@@ -21,6 +31,7 @@ export default function CitationDrawer({
 	citation,
 	onClose,
 }: CitationDrawerProps): React.ReactElement | null {
+	const tDemo = useTranslations("Demo");
 	if (!isOpen || !citation) return null;
 
 	return (
@@ -80,19 +91,40 @@ export default function CitationDrawer({
 					</blockquote>
 				</div>
 
+				{citation.url && (
+					<a
+						href={citation.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="heritage-chip inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold w-fit"
+					>
+						<ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+						{tDemo("openSource")}
+					</a>
+				)}
+
 				<div className="border-t border-[var(--border-subtle)] pt-4 space-y-2.5 text-[11px] text-[var(--text-secondary)]">
-					<div className="flex items-center gap-2">
-						<BookOpenCheck className="w-3.5 h-3.5 text-[var(--accent-gold)]" />
-						<span>UNESCO · RCU · Darah Curated Series</span>
-					</div>
-					<div className="flex items-center gap-2">
-						<Calendar className="w-3.5 h-3.5 text-[var(--accent-terracotta)]" />
-						<span>Cross-checked via Hybrid pgvector + BM25 Index</span>
-					</div>
-					<div className="flex items-center gap-2">
-						<Shield className="w-3.5 h-3.5 text-[var(--accent-oasis)]" />
-						<span>Row-Level Security Verified (Neon Postgres)</span>
-					</div>
+					{citation.origin === "demo" ? (
+						<div className="flex items-center gap-2">
+							<BookOpenCheck className="w-3.5 h-3.5 text-[var(--accent-terracotta)]" />
+							<span>{tDemo("curatedProvenance")}</span>
+						</div>
+					) : (
+						<>
+							<div className="flex items-center gap-2">
+								<BookOpenCheck className="w-3.5 h-3.5 text-[var(--accent-gold)]" />
+								<span>UNESCO · RCU · Darah Curated Series</span>
+							</div>
+							<div className="flex items-center gap-2">
+								<Calendar className="w-3.5 h-3.5 text-[var(--accent-terracotta)]" />
+								<span>Cross-checked via Hybrid pgvector + BM25 Index</span>
+							</div>
+							<div className="flex items-center gap-2">
+								<Shield className="w-3.5 h-3.5 text-[var(--accent-oasis)]" />
+								<span>Row-Level Security Verified (Neon Postgres)</span>
+							</div>
+						</>
+					)}
 				</div>
 			</div>
 		</div>
