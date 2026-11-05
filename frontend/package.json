@@ -15,7 +15,7 @@
 		"format:check": "biome format .",
 		"check": "biome ci .",
 		"typecheck": "tsc --noEmit",
-		"test": "node src/tests/admin-check.js && node src/tests/form-check.js && node src/tests/i18n-check.js && node src/tests/landing-check.js && node src/tests/og-check.js && node src/tests/patterns-check.js && node src/tests/pwa-check.js && node src/tests/ratelimit-check.js && node src/tests/readme-check.js && node src/tests/ui-moat-check.js"
+		"test": "node src/tests/admin-check.js && node src/tests/form-check.js && node src/tests/i18n-check.js && node src/tests/landing-check.js && node src/tests/og-check.js && node src/tests/patterns-check.js && node src/tests/pwa-check.js && node src/tests/ratelimit-check.js && node src/tests/readme-check.js && node src/tests/ui-moat-check.js && node src/tests/demo-check.js"
 	},
 	"dependencies": {
 		"@ducanh2912/next-pwa": "^10.2.9",
