@@ -116,6 +116,23 @@ try {
 		"ChatSource carries the UNESCO url",
 	);
 
+	const { buildDemoMajlisScript } = require("../lib/demo/demoMajlis.ts");
+	for (const site of SITES) {
+		for (const locale of ["en", "ar"]) {
+			const script = buildDemoMajlisScript(site, locale);
+			assert.ok(script.title.length > 0, `${site}/${locale}: Majlis title`);
+			assert.ok(script.dialogue.length >= 4, `${site}/${locale}: >= 4 lines`);
+			const ids = new Set(script.dialogue.map((l) => l.id));
+			assert.strictEqual(ids.size, script.dialogue.length, "Unique line ids");
+			assert.ok(
+				script.dialogue.every(
+					(l) => l.speaker === "Visitor" || l.speaker === "Rawi",
+				),
+				"Speakers must be Visitor or Rawi",
+			);
+		}
+	}
+
 	const { askOracle, OracleRequestError } = require("../lib/oracleClient.ts");
 	const request = {
 		query: withPrompt.prompt.en,

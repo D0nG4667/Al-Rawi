@@ -23,6 +23,8 @@ import HeritageOrnament from "@/components/ui/HeritageOrnament";
 import MindMap from "@/components/ui/MindMap";
 import { useGeofence } from "@/hooks/useGeofence";
 import { useSoundDesign } from "@/hooks/useSoundDesign";
+import { speakWithBrowserVoice, stopBrowserVoice } from "@/lib/browserVoice";
+import { buildDemoMajlisScript } from "@/lib/demo/demoMajlis";
 import { askOracle, OracleRequestError } from "@/lib/oracleClient";
 import { useUIStore } from "@/store/useUIStore";
 
@@ -80,6 +82,8 @@ export default function ExploreDashboard({
 	const [majlisScript, setMajlisScript] = useState<PodcastScript | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [audioAnalyser, setAudioAnalyser] = useState<AnalyserNode | null>(null);
+	const [majlisNotice, setMajlisNotice] = useState("");
+	const isBrowserVoiceRef = useRef(false);
 
 	// Audio element & context references
 	const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -148,6 +152,8 @@ export default function ExploreDashboard({
 			audioCtxRef.current.close();
 			audioCtxRef.current = null;
 		}
+		stopBrowserVoice();
+		isBrowserVoiceRef.current = false;
 		setAudioAnalyser(null);
 		setIsPlaying(false);
 	}, []);
@@ -179,6 +185,7 @@ export default function ExploreDashboard({
 			});
 
 			if (!res.ok) {
+				if (res.status >= 500) throw new Error(tDemo("uploadUnavailable"));
 				const errData = await res.json().catch(() => ({}));
 				throw new Error(
 					typeof errData.detail === "string"
@@ -198,7 +205,11 @@ export default function ExploreDashboard({
 			playChime();
 		} catch (err: unknown) {
 			setUploadError(
-				err instanceof Error ? err.message : "Failed to upload document.",
+				err instanceof TypeError
+					? tDemo("uploadUnavailable")
+					: err instanceof Error
+						? err.message
+						: tDemo("uploadUnavailable"),
 			);
 		} finally {
 			setIsUploading(false);
@@ -291,6 +302,7 @@ export default function ExploreDashboard({
 		playWhoosh();
 		setIsMajlisDrafting(true);
 		setMajlisScript(null);
+		setMajlisNotice("");
 		stopAudio();
 
 		const lastUserMsg = [...chatHistory]
@@ -326,22 +338,11 @@ export default function ExploreDashboard({
 				dialogue: mappedDialogue,
 			});
 		} catch (error) {
-			console.error("[-] Majlis draft failed:", error);
-			setMajlisScript({
-				title: "UNESCO Heritage of Arabia",
-				dialogue: [
-					{
-						id: `line-fallback-1-${Date.now()}`,
-						speaker: "Visitor",
-						text: "Can you tell me about the architectural significance of At-Turaif in Ad-Dir'iyah?",
-					},
-					{
-						id: `line-fallback-2-${Date.now()}`,
-						speaker: "Rawi",
-						text: "أهلاً بك. At-Turaif stands as the citadel of the First Saudi State and a masterpiece of Najdi adobe engineering.",
-					},
-				],
-			});
+			console.error(
+				"[-] Majlis draft failed, using Demo Archive script:",
+				error,
+			);
+			setMajlisScript(buildDemoMajlisScript(activeSite, langKey));
 		} finally {
 			setIsMajlisDrafting(false);
 		}
@@ -391,6 +392,7 @@ export default function ExploreDashboard({
 		if (!majlisScript) return;
 		setIsMajlisStreaming(true);
 		stopAudio();
+		setMajlisNotice("");
 
 		try {
 			const res = await fetch("/api/audio/stream", {
@@ -435,14 +437,37 @@ export default function ExploreDashboard({
 			audio.play();
 			setIsPlaying(true);
 		} catch (error) {
-			console.error("[-] Vocalization error:", error);
-			alert("Failed to synthesize vocals. Please check your ElevenLabs quota.");
+			console.error("[-] Vocalization failed, using browser voice:", error);
+			const spoke = speakWithBrowserVoice(
+				majlisScript.dialogue,
+				langKey,
+				() => {
+					isBrowserVoiceRef.current = false;
+					setIsPlaying(false);
+				},
+			);
+			if (spoke) {
+				isBrowserVoiceRef.current = true;
+				setIsPlaying(true);
+				setMajlisNotice(tDemo("audioFallback"));
+			} else {
+				setMajlisNotice(tDemo("errorGeneric"));
+			}
 		} finally {
 			setIsMajlisStreaming(false);
 		}
 	};
 
 	const togglePlayPause = (): void => {
+		if (isBrowserVoiceRef.current) {
+			if (isPlaying) {
+				window.speechSynthesis.pause();
+			} else {
+				window.speechSynthesis.resume();
+			}
+			setIsPlaying(!isPlaying);
+			return;
+		}
 		if (!audioRef.current) return;
 		if (isPlaying) {
 			audioRef.current.pause();
@@ -584,6 +609,7 @@ export default function ExploreDashboard({
 				isPlaying={isPlaying}
 				script={majlisScript}
 				hasAudioAnalyser={Boolean(audioAnalyser)}
+				notice={majlisNotice}
 				onClose={() => {
 					playClick();
 					stopAudio();
