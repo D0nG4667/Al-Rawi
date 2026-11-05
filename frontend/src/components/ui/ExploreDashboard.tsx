@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Scene from "@/components/canvas/Scene";
 import CitationDrawer, {
@@ -18,27 +19,41 @@ import type {
 	PodcastScript,
 	UploadedDoc,
 } from "@/components/explore/types";
+import GuidedTour from "@/components/onboarding/GuidedTour";
 import HeritageOrnament from "@/components/ui/HeritageOrnament";
 import MindMap from "@/components/ui/MindMap";
 import { useGeofence } from "@/hooks/useGeofence";
+import { useGuidedTour } from "@/hooks/useGuidedTour";
 import { useSoundDesign } from "@/hooks/useSoundDesign";
-import { useUIStore } from "@/store/useUIStore";
+import { speakWithBrowserVoice, stopBrowserVoice } from "@/lib/browserVoice";
+import { buildDemoMajlisScript } from "@/lib/demo/demoMajlis";
+import type { ExploreParams } from "@/lib/exploreParams";
+import { askOracle, OracleRequestError } from "@/lib/oracleClient";
+import { TOUR_STEPS } from "@/lib/tourSteps";
+import { HERITAGE_SITES, useUIStore } from "@/store/useUIStore";
 
 interface ExploreDashboardProps {
 	locale: string;
+	initialParams?: ExploreParams;
 }
 
 export default function ExploreDashboard({
 	locale,
+	initialParams,
 }: ExploreDashboardProps): React.ReactElement {
 	// Activate geolocation-based UNESCO geofencing
 	useGeofence();
 
 	// Global UI Store
 	const persona = useUIStore((state) => state.persona);
+	const setPersona = useUIStore((state) => state.setPersona);
 	const setAIThinking = useUIStore((state) => state.setAIThinking);
 	const activeDrawer = useUIStore((state) => state.activeDrawer);
 	const setActiveDrawer = useUIStore((state) => state.setActiveDrawer);
+	const activeSite = useUIStore((state) => state.activeSite);
+	const setActiveSite = useUIStore((state) => state.setActiveSite);
+	const tDemo = useTranslations("Demo");
+	const langKey: "en" | "ar" = locale === "ar" ? "ar" : "en";
 
 	// Modal states
 	const [isMapOpen, setIsMapOpen] = useState(false);
@@ -53,6 +68,9 @@ export default function ExploreDashboard({
 	// Chat states
 	const [chatInput, setChatInput] = useState("");
 	const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+	const lastOracleOrigin = [...chatHistory]
+		.reverse()
+		.find((msg) => msg.role === "oracle")?.origin;
 	const [isThinking, setIsThinking] = useState(false);
 	const [activeQuery, setActiveQuery] = useState("");
 	const commandInputRef = useRef<HTMLInputElement | null>(null);
@@ -72,6 +90,9 @@ export default function ExploreDashboard({
 	const [majlisScript, setMajlisScript] = useState<PodcastScript | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [audioAnalyser, setAudioAnalyser] = useState<AnalyserNode | null>(null);
+	const [majlisNotice, setMajlisNotice] = useState("");
+	const [isBrowserVoiceActive, setIsBrowserVoiceActive] = useState(false);
+	const isBrowserVoiceRef = useRef(false);
 
 	// Audio element & context references
 	const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -79,6 +100,7 @@ export default function ExploreDashboard({
 
 	// Cinematic Entry Preloader State
 	const [isPreloading, setIsPreloading] = useState(true);
+	const tour = useGuidedTour(!isPreloading);
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -86,6 +108,16 @@ export default function ExploreDashboard({
 		}, 1200);
 		return () => clearTimeout(timer);
 	}, []);
+
+	// Apply validated deep-link params once (/explore?site=&persona=&q=)
+	const appliedParamsRef = useRef(false);
+	useEffect(() => {
+		if (appliedParamsRef.current || !initialParams) return;
+		appliedParamsRef.current = true;
+		if (initialParams.site) setActiveSite(initialParams.site);
+		if (initialParams.persona) setPersona(initialParams.persona);
+		if (initialParams.query) setChatInput(initialParams.query);
+	}, [initialParams, setActiveSite, setPersona]);
 
 	// Global keyboard navigation: Cmd/Ctrl+K (focus prompt), [ (Archive), ] (Oracle), Esc (close sheets)
 	useEffect(() => {
@@ -140,6 +172,9 @@ export default function ExploreDashboard({
 			audioCtxRef.current.close();
 			audioCtxRef.current = null;
 		}
+		stopBrowserVoice();
+		isBrowserVoiceRef.current = false;
+		setIsBrowserVoiceActive(false);
 		setAudioAnalyser(null);
 		setIsPlaying(false);
 	}, []);
@@ -171,6 +206,7 @@ export default function ExploreDashboard({
 			});
 
 			if (!res.ok) {
+				if (res.status >= 500) throw new Error(tDemo("uploadUnavailable"));
 				const errData = await res.json().catch(() => ({}));
 				throw new Error(
 					typeof errData.detail === "string"
@@ -190,7 +226,11 @@ export default function ExploreDashboard({
 			playChime();
 		} catch (err: unknown) {
 			setUploadError(
-				err instanceof Error ? err.message : "Failed to upload document.",
+				err instanceof TypeError
+					? tDemo("uploadUnavailable")
+					: err instanceof Error
+						? err.message
+						: tDemo("uploadUnavailable"),
 			);
 		} finally {
 			setIsUploading(false);
@@ -207,6 +247,9 @@ export default function ExploreDashboard({
 		setChatInput("");
 		setActiveQuery(query);
 		setActiveDrawer("oracle");
+		if (tour.isActive && TOUR_STEPS[tour.stepIndex]?.id === "ask") {
+			tour.next();
+		}
 		setChatHistory((prev) => [
 			...prev.map((m) => ({ ...m, isNew: false })),
 			{ id: `user-${Date.now()}`, role: "user", text: query },
@@ -215,60 +258,39 @@ export default function ExploreDashboard({
 		setAIThinking(true);
 
 		try {
-			const payload: {
-				query: string;
-				persona: string;
-				api_key?: string;
-			} = {
+			const result = await askOracle({
 				query,
 				persona,
-			};
-			if (apiKey.trim()) {
-				payload.api_key = apiKey.trim();
-			}
-
-			const res = await fetch("/api/chat", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(payload),
+				site: activeSite,
+				locale: langKey,
+				apiKey: apiKey.trim() || undefined,
 			});
-
-			if (!res.ok) {
-				throw new Error("Oracle is unresponsive.");
-			}
-
-			const data = await res.json();
-			const mappedSources: ChatSource[] = (data.sources || []).map(
-				(
-					src: { metadata?: Record<string, unknown>; snippet?: string },
-					i: number,
-				) => ({
-					...src,
-					id: `src-${i}-${Date.now()}`,
-				}),
-			);
 			setChatHistory((prev) => [
 				...prev,
 				{
 					id: `oracle-${Date.now()}`,
 					role: "oracle",
-					text: data.answer || "I could not resolve that.",
-					sources: mappedSources,
+					text: result.answer,
+					sources: result.sources,
+					origin: result.origin,
 					isNew: true,
 				},
 			]);
 			playChime();
 		} catch (error: unknown) {
-			const errorMessage =
-				error instanceof Error ? error.message : "Connection failed.";
+			const status = error instanceof OracleRequestError ? error.status : 0;
+			const message =
+				status === 401 || status === 403
+					? tDemo("errorAuth")
+					: status === 429
+						? tDemo("errorRateLimit")
+						: tDemo("errorGeneric");
 			setChatHistory((prev) => [
 				...prev,
 				{
 					id: `error-${Date.now()}`,
 					role: "oracle",
-					text: `Error: ${errorMessage}`,
+					text: message,
 					isNew: true,
 				},
 			]);
@@ -291,6 +313,8 @@ export default function ExploreDashboard({
 				typeof src.metadata?.page === "number"
 					? src.metadata.page
 					: undefined,
+			url: typeof src.metadata?.url === "string" ? src.metadata.url : undefined,
+			origin: src.metadata?.origin === "demo" ? "demo" : "live",
 		});
 		setIsCitationOpen(true);
 		playWhoosh();
@@ -302,6 +326,7 @@ export default function ExploreDashboard({
 		playWhoosh();
 		setIsMajlisDrafting(true);
 		setMajlisScript(null);
+		setMajlisNotice("");
 		stopAudio();
 
 		const lastUserMsg = [...chatHistory]
@@ -337,22 +362,11 @@ export default function ExploreDashboard({
 				dialogue: mappedDialogue,
 			});
 		} catch (error) {
-			console.error("[-] Majlis draft failed:", error);
-			setMajlisScript({
-				title: "UNESCO Heritage of Arabia",
-				dialogue: [
-					{
-						id: `line-fallback-1-${Date.now()}`,
-						speaker: "Visitor",
-						text: "Can you tell me about the architectural significance of At-Turaif in Ad-Dir'iyah?",
-					},
-					{
-						id: `line-fallback-2-${Date.now()}`,
-						speaker: "Rawi",
-						text: "أهلاً بك. At-Turaif stands as the citadel of the First Saudi State and a masterpiece of Najdi adobe engineering.",
-					},
-				],
-			});
+			console.error(
+				"[-] Majlis draft failed, using Demo Archive script:",
+				error,
+			);
+			setMajlisScript(buildDemoMajlisScript(activeSite, langKey));
 		} finally {
 			setIsMajlisDrafting(false);
 		}
@@ -402,6 +416,7 @@ export default function ExploreDashboard({
 		if (!majlisScript) return;
 		setIsMajlisStreaming(true);
 		stopAudio();
+		setMajlisNotice("");
 
 		try {
 			const res = await fetch("/api/audio/stream", {
@@ -446,14 +461,39 @@ export default function ExploreDashboard({
 			audio.play();
 			setIsPlaying(true);
 		} catch (error) {
-			console.error("[-] Vocalization error:", error);
-			alert("Failed to synthesize vocals. Please check your ElevenLabs quota.");
+			console.error("[-] Vocalization failed, using browser voice:", error);
+			const spoke = speakWithBrowserVoice(
+				majlisScript.dialogue,
+				langKey,
+				() => {
+					isBrowserVoiceRef.current = false;
+					setIsBrowserVoiceActive(false);
+					setIsPlaying(false);
+				},
+			);
+			if (spoke) {
+				isBrowserVoiceRef.current = true;
+				setIsBrowserVoiceActive(true);
+				setIsPlaying(true);
+				setMajlisNotice(tDemo("audioFallback"));
+			} else {
+				setMajlisNotice(tDemo("errorGeneric"));
+			}
 		} finally {
 			setIsMajlisStreaming(false);
 		}
 	};
 
 	const togglePlayPause = (): void => {
+		if (isBrowserVoiceRef.current) {
+			if (isPlaying) {
+				window.speechSynthesis.pause();
+			} else {
+				window.speechSynthesis.resume();
+			}
+			setIsPlaying(!isPlaying);
+			return;
+		}
 		if (!audioRef.current) return;
 		if (isPlaying) {
 			audioRef.current.pause();
@@ -495,6 +535,7 @@ export default function ExploreDashboard({
 			<div className="relative z-10 h-dvh w-full p-4 sm:p-6 flex flex-col justify-between pointer-events-none">
 				<ExploreTopBar
 					locale={locale}
+					isDemo={lastOracleOrigin === "demo"}
 					uploadedCount={uploadedDocs.length}
 					messageCount={chatHistory.length}
 					onOpenMap={() => {
@@ -504,6 +545,7 @@ export default function ExploreDashboard({
 					}}
 					onSummonMajlis={handleSummonMajlis}
 					onInteractionSound={playClick}
+					onStartTour={tour.start}
 				/>
 
 				<div className="flex-1 flex items-center justify-start my-4 pointer-events-none">
@@ -593,7 +635,8 @@ export default function ExploreDashboard({
 				isStreaming={isMajlisStreaming}
 				isPlaying={isPlaying}
 				script={majlisScript}
-				hasAudioAnalyser={Boolean(audioAnalyser)}
+				hasAudioAnalyser={Boolean(audioAnalyser) || isBrowserVoiceActive}
+				notice={majlisNotice}
 				onClose={() => {
 					playClick();
 					stopAudio();
@@ -612,6 +655,16 @@ export default function ExploreDashboard({
 				onGenerateAudio={handleGenerateAudio}
 				onTogglePlayPause={togglePlayPause}
 				onStopAudio={stopAudio}
+			/>
+
+			<GuidedTour
+				tour={tour}
+				onAskForMe={() =>
+					handleSendChat(
+						chatInput.trim() ||
+							HERITAGE_SITES[activeSite].prompts[persona][langKey][0],
+					)
+				}
 			/>
 		</>
 	);

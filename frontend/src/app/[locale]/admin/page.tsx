@@ -56,7 +56,7 @@ export default async function AdminPage({
 						</div>
 					</div>
 					<Link
-						href={`/${locale}`}
+						href={`/${locale}/explore`}
 						className="text-xs manuscript-card px-4 py-2.5 rounded-full font-semibold flex items-center gap-2 hover:border-[var(--border-strong)] transition-all"
 					>
 						<ArrowLeft className="w-3.5 h-3.5 text-[var(--accent-gold)]" />

@@ -49,7 +49,10 @@ export default function OracleCommandBar({
 	return (
 		<div className="w-full max-w-2xl mx-auto flex flex-col gap-2.5 pointer-events-auto">
 			{/* Contextual Heritage Starter Prompts */}
-			<div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+			<div
+				data-tour="starter-chips"
+				className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar"
+			>
 				{starterPrompts.map((prompt) => (
 					<button
 						key={prompt}
@@ -112,7 +115,7 @@ export default function OracleCommandBar({
 						onClick={() => onSendChat()}
 						disabled={isThinking || !chatInput.trim()}
 						aria-label="Submit inquiry to Al-Rawi Oracle"
-						className="absolute inset-inline-end-2 p-1.5 rounded-lg heritage-chip disabled:opacity-30 cursor-pointer"
+						className="absolute end-2 p-1.5 rounded-lg heritage-chip disabled:opacity-30 cursor-pointer"
 					>
 						<Send className="w-4 h-4" />
 					</button>

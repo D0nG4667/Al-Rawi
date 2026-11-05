@@ -3,6 +3,7 @@
 import {
 	Archive,
 	Compass,
+	HelpCircle,
 	MapPin,
 	Moon,
 	ScrollText,
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type React from "react";
+import DemoBadge from "@/components/explore/DemoBadge";
 import HeritageOrnament from "@/components/ui/HeritageOrnament";
 import PersonaSelector from "@/components/ui/PersonaSelector";
 import {
@@ -21,25 +23,30 @@ import {
 
 interface ExploreTopBarProps {
 	locale: string;
+	isDemo: boolean;
 	uploadedCount: number;
 	messageCount: number;
 	onOpenMap: () => void;
 	onSummonMajlis: () => void;
 	onInteractionSound: () => void;
+	onStartTour: () => void;
 }
 
 const SITE_ORDER: HeritageSiteId[] = ["diriyah", "hegra", "jeddah"];
 
 export default function ExploreTopBar({
 	locale,
+	isDemo,
 	uploadedCount,
 	messageCount,
 	onOpenMap,
 	onSummonMajlis,
 	onInteractionSound,
+	onStartTour,
 }: ExploreTopBarProps): React.ReactElement {
 	const tCommon = useTranslations("Common");
 	const tDash = useTranslations("Dashboard");
+	const tTour = useTranslations("Tour");
 
 	const theme = useUIStore((state) => state.theme);
 	const toggleTheme = useUIStore((state) => state.toggleTheme);
@@ -63,24 +70,28 @@ export default function ExploreTopBar({
 	};
 
 	return (
-		<header className="w-full max-w-7xl mx-auto pointer-events-auto">
-			<div className="glass-panel px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+		<header className="w-full max-w-[1440px] mx-auto pointer-events-auto">
+			<div className="glass-panel px-3.5 py-2.5 flex flex-wrap xl:flex-nowrap items-center justify-between gap-2">
 				{/* Brand & Active Geofence Telemetry */}
-				<div className="flex items-center gap-3">
+				<div className="flex items-center gap-2.5 shrink-0">
 					<div className="p-1.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
-						<HeritageOrnament variant="astrolabe" className="w-7 h-7" />
+						<HeritageOrnament variant="astrolabe" className="w-6 h-6" />
 					</div>
 					<div>
 						<div className="flex items-center gap-2">
-							<h1 className="text-lg font-display font-bold tracking-wide text-[var(--text-primary)]">
+							<h1 className="text-base sm:text-lg font-display font-bold tracking-wide text-[var(--text-primary)] whitespace-nowrap">
 								{tCommon("title")}
 							</h1>
-							<span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono-tabular px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-oasis)]">
-								<span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-oasis)] animate-pulse" />
-								{tCommon("oracleStatus")}
-							</span>
+							{isDemo ? (
+								<DemoBadge className="hidden sm:inline-flex" />
+							) : (
+								<span className="hidden 2xl:inline-flex items-center gap-1.5 text-[10px] font-mono-tabular px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-oasis)] whitespace-nowrap">
+									<span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-oasis)] animate-pulse" />
+									{tCommon("oracleStatus")}
+								</span>
+							)}
 						</div>
-						<p className="text-[11px] text-[var(--text-secondary)] hidden sm:block">
+						<p className="text-[11px] text-[var(--text-secondary)] hidden 2xl:block">
 							{tCommon("subtitle")}
 						</p>
 					</div>
@@ -89,7 +100,8 @@ export default function ExploreTopBar({
 				{/* UNESCO Site Teleporter Pills */}
 				<nav
 					aria-label="UNESCO World Heritage Sites"
-					className="hidden lg:flex items-center gap-1 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl p-1"
+					data-tour="site-teleporter"
+					className="hidden lg:flex items-center gap-1 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl p-1 shrink-0"
 				>
 					{SITE_ORDER.map((siteId) => {
 						const site = HERITAGE_SITES[siteId];
@@ -100,7 +112,7 @@ export default function ExploreTopBar({
 								key={siteId}
 								type="button"
 								onClick={() => handleSelectSite(siteId)}
-								className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
+								className={`px-2.5 py-1.5 rounded-lg text-[11px] 2xl:text-xs whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
 									isActive
 										? "heritage-chip font-semibold shadow-sm"
 										: "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -111,14 +123,14 @@ export default function ExploreTopBar({
 							</button>
 						);
 					})}
-					<span className="px-2.5 text-[10px] font-mono-tabular text-[var(--text-muted)] border-s border-[var(--border-subtle)]">
+					<span className="hidden 2xl:inline px-2.5 text-[10px] font-mono-tabular text-[var(--text-muted)] border-s border-[var(--border-subtle)] whitespace-nowrap">
 						{currentSiteMeta.coordinatesLabel}
 					</span>
 				</nav>
 
 				{/* Right Controls: Persona, Drawers, Map, Majlis, Theme, Locale */}
-				<div className="flex items-center gap-2 flex-wrap">
-					<div className="hidden xl:block">
+				<div className="flex items-center gap-1.5 flex-wrap xl:flex-nowrap shrink-0">
+					<div className="hidden 2xl:block" data-tour="persona-pill">
 						<PersonaSelector compact />
 					</div>
 
@@ -127,7 +139,7 @@ export default function ExploreTopBar({
 						type="button"
 						onClick={() => handleToggleDrawer("archive")}
 						aria-expanded={activeDrawer === "archive"}
-						className={`px-3 py-2 rounded-xl text-xs font-medium border transition-all flex items-center gap-1.5 cursor-pointer ${
+						className={`px-2.5 py-1.5 rounded-xl text-[11px] 2xl:text-xs whitespace-nowrap font-medium border transition-all flex items-center gap-1.5 cursor-pointer ${
 							activeDrawer === "archive"
 								? "heritage-chip font-semibold"
 								: "bg-[var(--bg-elevated)] border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[var(--text-primary)]"
@@ -145,7 +157,7 @@ export default function ExploreTopBar({
 						type="button"
 						onClick={() => handleToggleDrawer("oracle")}
 						aria-expanded={activeDrawer === "oracle"}
-						className={`px-3 py-2 rounded-xl text-xs font-medium border transition-all flex items-center gap-1.5 cursor-pointer ${
+						className={`px-2.5 py-1.5 rounded-xl text-[11px] 2xl:text-xs whitespace-nowrap font-medium border transition-all flex items-center gap-1.5 cursor-pointer ${
 							activeDrawer === "oracle"
 								? "heritage-chip font-semibold"
 								: "bg-[var(--bg-elevated)] border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[var(--text-primary)]"
@@ -164,21 +176,36 @@ export default function ExploreTopBar({
 					<button
 						type="button"
 						onClick={onOpenMap}
-						className="px-3 py-2 rounded-xl text-xs font-medium bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[var(--text-primary)] transition-all flex items-center gap-1.5 cursor-pointer"
+						className="p-2 2xl:px-2.5 2xl:py-1.5 rounded-xl text-[11px] 2xl:text-xs whitespace-nowrap font-medium bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[var(--text-primary)] transition-all flex items-center gap-1.5 cursor-pointer"
 						title={tDash("viewMap")}
+						aria-label={tDash("viewMap")}
 					>
-						<Compass className="w-3.5 h-3.5 text-[var(--accent-gold)]" />
-						<span className="hidden sm:inline">{tDash("viewMap")}</span>
+						<Compass className="w-4 h-4 2xl:w-3.5 2xl:h-3.5 text-[var(--accent-gold)]" />
+						<span className="hidden 2xl:inline">{tDash("viewMap")}</span>
 					</button>
 
 					{/* Majlis Audio Studio Trigger */}
 					<button
 						type="button"
 						onClick={onSummonMajlis}
-						className="px-3 py-2 rounded-xl text-xs font-semibold heritage-chip transition-all flex items-center gap-1.5 cursor-pointer"
+						className="px-2.5 py-1.5 rounded-xl text-[11px] 2xl:text-xs whitespace-nowrap font-semibold heritage-chip transition-all flex items-center gap-1.5 cursor-pointer"
 					>
 						<Sparkles className="w-3.5 h-3.5" />
 						<span className="hidden sm:inline">{tDash("majlisTrigger")}</span>
+					</button>
+
+					{/* Guided Tour Trigger */}
+					<button
+						type="button"
+						onClick={() => {
+							onInteractionSound();
+							onStartTour();
+						}}
+						aria-label={tTour("restart")}
+						title={tTour("restart")}
+						className="p-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[var(--accent-gold)] transition-all cursor-pointer"
+					>
+						<HelpCircle className="w-4 h-4" aria-hidden="true" />
 					</button>
 
 					{/* Dual Heritage Theme Switcher */}
@@ -209,8 +236,8 @@ export default function ExploreTopBar({
 
 					{/* Locale Switcher */}
 					<a
-						href={`/${switchLocale}`}
-						className="text-xs bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] rounded-xl px-3 py-2 text-[var(--text-primary)] transition-all font-semibold"
+						href={`/${switchLocale}/explore`}
+						className="text-xs bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] rounded-xl px-2.5 py-1.5 text-[var(--text-primary)] transition-all font-semibold whitespace-nowrap"
 					>
 						{switchLabel}
 					</a>

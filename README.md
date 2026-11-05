@@ -1,146 +1,150 @@
-# الراوي • Al-Rawi (The Storyteller)
+# الراوي · Al-Rawi
 
-**Al-Rawi** is a bilingual (English / Arabic RTL), spatial 3D AI Heritage & Tourism Oracle for exploring Saudi Arabia's UNESCO World Heritage sites (such as **At-Turaif in Diriyah**, **Hegra / Al-Hijr in AlUla**, and **Historic Jeddah**). It pairs an isolated WebGL 3D canvas (`@react-three/fiber` + custom GLSL desert and holographic shaders) with a glassmorphic Next.js 16 interface and a resilient FastAPI + LangChain RAG backend powered by **Gemini 2.5 Flash**.
+**Every stone has a narrator.** A bilingual (Arabic / English) AI guide to Saudi Arabia's UNESCO World Heritage sites (At-Turaif in Ad-Dir'iyah, Hegra in AlUla, and Historic Jeddah) with 3D monuments, cited answers, knowledge maps and narrated conversations.
+
+[![CI](https://github.com/D0nG4667/Al-Rawi/actions/workflows/ci.yml/badge.svg)](https://github.com/D0nG4667/Al-Rawi/actions/workflows/ci.yml)
+![Node 26 LTS](https://img.shields.io/badge/node-26%20LTS-3c873a)
+![Python 3.12](https://img.shields.io/badge/python-3.12-3776ab)
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](LICENSE)
+
+![Al-Rawi landing page in the Desert Night theme](docs/assets/landing-night.png)
+
+| Explore Hegra (Desert Night) | Historic Jeddah in Arabic (Sunlit Sandstone) |
+|---|---|
+| ![Explore workspace with a cited answer about Hegra](docs/assets/explore-night.png) | ![Arabic right-to-left workspace for Historic Jeddah](docs/assets/explore-sandstone-ar.png) |
 
 ---
 
-## Architecture Overview
+## Why Al-Rawi
+
+**The problem.** The best knowledge about Saudi heritage sits in 300-page UNESCO nomination dossiers, masterplans and archival journals. Visitors never read them, and generic chatbots answer without sources.
+
+**The solution.** Al-Rawi turns those primary sources into an interactive, Arabic-first guide. Every answer cites the document it came from, and every site can be explored in 3D.
+
+**Who it serves.**
+
+| Audience | Value |
+|---|---|
+| Heritage authorities | An accurate, citable public guide built from your own dossiers and conservation reports |
+| Tourism operators | A memorable bilingual companion before, during and after a visit |
+| Visitors and educators | Explore the sites in 3D, ask anything, learn from the sources themselves |
+
+---
+
+## Try it in 60 seconds
+
+No API keys and no backend needed: the workspace answers from a curated **Demo Archive** of cited answers based on the official UNESCO listings, and marks those answers with a visible "Demo Archive" badge.
+
+```bash
+pnpm --dir frontend install
+pnpm dev:web            # http://localhost:3000
+```
+
+Deep links work out of the box, e.g. `http://localhost:3000/en/explore?site=hegra&persona=ACADEMIC`.
+
+Set `NEXT_PUBLIC_DEMO_MODE=always` in `frontend/.env.local` to force demo answers (kiosks, pitches).
+
+### Full stack (live research over your own documents)
+
+```bash
+pnpm install                                  # root tooling + Lefthook hooks
+pnpm bootstrap                                # frontend deps + backend virtualenv (uv)
+cp backend/.env.example backend/.env          # add GOOGLE_API_KEY
+cp frontend/.env.example frontend/.env.local
+pnpm services:up                              # Postgres 18 (pgvector) + Redis 8
+pnpm dev                                      # FastAPI :8000 + Next.js :3000
+```
+
+---
+
+## Capabilities
+
+1. **Cinematic bilingual landing page** with deep links into each site.
+2. **3D heritage workspace**: procedural monuments for At-Turaif, Hegra and Historic Jeddah, camera waypoints, Desert Night and Sunlit Sandstone themes.
+3. **Cited answers**: hybrid `pgvector` retrieval with Gemini 2.5 Flash; each answer lists its sources and opens the excerpt and original record.
+4. **Never breaks in a demo**: automatic fallback to the Demo Archive on network errors, timeouts or server errors; configuration errors (e.g. a bad API key) are shown, not hidden.
+5. **Guided first-run tour**: four accessible steps, keyboard and RTL aware.
+6. **Knowledge graph** of people, places and periods (`@xyflow/react`).
+7. **The Majlis**: editable two-voice conversations with narration (ElevenLabs / gTTS, browser voice fallback).
+
+---
+
+## Architecture
 
 ```mermaid
 flowchart LR
-    subgraph Frontend["Frontend (Next.js 16 + React 19 + R3F)"]
-        UI["Glassmorphic UI & Majlis Studio"]
-        Canvas["3D WebGL Canvas & GLSL Shaders"]
-        Store["Zustand Global Store (useUIStore)"]
-        Proxy["Next.js Edge Proxy & Upstash Rate Limiter"]
+    subgraph Frontend["Frontend · Next.js 16 + React 19"]
+        Landing["Landing page (/[locale])"]
+        Explore["3D workspace (/[locale]/explore)"]
+        Demo["Demo Archive (offline, cited)"]
     end
-
-    subgraph Backend["Backend (FastAPI + LangChain + Python 3.12)"]
-        Chat["/api/v1/chat (Hybrid RAG + Guardrails)"]
-        Docs["/api/v1/upload & /request-document"]
-        MindMap["/api/v1/mindmap (Knowledge Graph)"]
-        Podcast["/api/v1/podcast/draft & /audio/stream"]
-        Admin["/api/v1/admin/* (Telemetry & Cache)"]
+    subgraph Backend["Backend · FastAPI + LangGraph"]
+        Chat["/api/v1/chat"]
+        Ingest["/api/v1/upload"]
+        Graph["/api/v1/mindmap"]
+        Majlis["/api/v1/podcast · /audio"]
     end
-
-    subgraph Data["Persistence & AI Services"]
-        Neon[("Neon Serverless Postgres (pgvector)")]
-        Redis[("Upstash Redis (Cache & ARQ Queue)")]
-        R2[("Cloudflare R2 Object Storage")]
-        LLM["Gemini 2.5 Flash + GPT-4o Mini Failover"]
-        TTS["Mishkal + ElevenLabs / gTTS"]
+    subgraph Data["Data & AI"]
+        PG[("PostgreSQL 18 + pgvector")]
+        Redis[("Redis 8 cache")]
+        LLM["Gemini 2.5 Flash"]
     end
-
-    UI <--> Store
-    Canvas <--> Store
-    UI --> Proxy
-    Proxy --> Chat & Docs & MindMap & Podcast & Admin
-    Chat --> Neon & Redis & LLM
-    Docs --> Neon & R2
-    MindMap --> LLM
-    Podcast --> LLM & TTS
-    Admin --> Neon & Redis
+    Landing --> Explore
+    Explore -->|live| Chat & Ingest & Graph & Majlis
+    Explore -->|fallback| Demo
+    Chat --> PG & Redis & LLM
+    Ingest --> PG
+    Graph --> LLM
+    Majlis --> LLM
 ```
 
 ---
 
-## Core Capabilities
+## Trust & citation integrity
 
-1. **Spatial 3D WebGL Heritage Canvas**:
-   - Isolated `@react-three/fiber` and `@react-three/drei` scene with custom procedural GLSL sand and holographic wireframe shaders ([`DesertSandShader.ts`](frontend/src/components/canvas/shaders/DesertSandShader.ts)).
-   - Camera position, rotation speed, and post-processing bloom respond dynamically to AI thinking state, selected mind-map nodes, and real-time audio frequencies (`AnalyserNode`).
-2. **Resilient Multi-Tenant RAG Pipeline**:
-   - Hybrid vector retrieval on **Neon Serverless PostgreSQL (`pgvector`)** with tenant namespace isolation (`SHA-256` collection derivation), semantic caching (`0.95` similarity threshold), context deduplication, and automatic failover from **Gemini 2.5 Flash** to **GPT-4o Mini** and offline historical fallbacks.
-   - Built-in AI safety & prompt-injection guardrails ([`guardrails.py`](backend/app/services/guardrails.py)).
-3. **Interactive Knowledge Graph (`@xyflow/react`)**:
-   - Synthesizes historical entities and relationships into an interactive node graph ([`MindMap.tsx`](frontend/src/components/ui/MindMap.tsx)) that focuses the 3D camera when nodes are selected.
-4. **"The Majlis" Podcast Studio & Vocal Synthesis**:
-   - Generates editable two-speaker dialogue scripts (`Visitor` and `Rawi`) grounded in UNESCO archival context, applies Arabic diacritization via `Mishkal`, and streams synthesized audio via **ElevenLabs** (`eleven_multilingual_v2`) with automatic **gTTS** fallback.
-5. **Multimodal UX & UNESCO Geofencing**:
-   - Bilingual `next-intl` support (`en` / `ar` RTL), Web Speech API voice input, interactive source citation drawers, procedural Web Audio UI sound effects, and Haversine geofencing for Diriyah, AlUla, and Historic Jeddah.
+- Answers cite their sources; citations open the excerpt and, where available, the original document.
+- Demo Archive answers cite only the official UNESCO World Heritage List entries ([1329](https://whc.unesco.org/en/list/1329), [1293](https://whc.unesco.org/en/list/1293), [1361](https://whc.unesco.org/en/list/1361)) and are labelled as demo content. Page numbers are shown only when verified.
+- The full stack can be deployed on your own infrastructure.
 
 ---
 
-## Repository Structure
-
-```text
-Al-Rawi/
-├── frontend/               # Next.js 16 (App Router, Turbopack), React 19, R3F, Tailwind v4, Biome
-│   ├── src/app/            # Localized routes ([locale]/page.tsx, [locale]/admin/page.tsx) & API proxy
-│   ├── src/components/     # 3D Canvas, Glassmorphic UI, Chat, and Admin components
-│   ├── src/hooks/          # useSoundDesign & useGeofence hooks
-│   ├── src/store/          # Zustand state synchronization (useUIStore)
-│   └── src/tests/          # Frontend verification scripts
-├── backend/                # FastAPI, LangChain, PGVector, ARQ, Structlog, Sentry
-│   ├── app/api/v1/         # REST endpoints (chat, documents, mindmap, podcast, admin)
-│   ├── app/services/       # RAG, ingestion, guardrails, mindmap, podcast, storage
-│   └── tests/              # Pytest unit, RLS, safety, and RAGAS evaluation suite (41 tests)
-├── docs/                   # PRD, C4 architecture, ERD, API contracts, data flow & design specs
-├── docker/                 # Local service init scripts (pgvector extension)
-├── .devcontainer/          # Codespaces / Dev Container definition
-├── .github/                # CI, CodeQL, release-please, Dependabot, templates & CODEOWNERS
-├── compose.yaml            # Local Postgres 18 (pgvector) + Redis 8
-├── lefthook.yml            # Git hooks: Biome, Ruff, gitleaks, commitlint, pre-push tests
-├── package.json            # Root developer scripts (dev, check, fix, services:*)
-└── PROMPTS.md              # System prompts, RAG templates, and guardrail policies
-```
-
----
-
-## Quick Start
-
-> Prefer zero setup? Open the repo in **GitHub Codespaces** or a **VS Code Dev Container**.
-> Full details live in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-```bash
-npm install -g pnpm@latest      # once; pnpm self-manages via devEngines
-pnpm install                    # root tooling + Lefthook git hooks
-pnpm bootstrap                  # frontend deps + backend virtualenv (uv)
-cp backend/.env.example backend/.env           # add GOOGLE_API_KEY
-cp frontend/.env.example frontend/.env.local
-pnpm services:up                # Postgres (pgvector) + Redis via Docker
-pnpm dev                        # FastAPI :8000 + Next.js :3000
-```
-
-Open `http://localhost:3000` to launch the Al-Rawi experience.
-
----
-
-## Developer Experience & CI/CD
+## Quality gates
 
 | Layer | Tooling |
 |---|---|
-| Toolchain pins | `devEngines` (Node 26 LTS, pnpm 12), `.node-version`, `.python-version` |
-| Git hooks | [Lefthook](lefthook.yml): staged-only Biome + Ruff + gitleaks (`pre-commit`), commitlint (`commit-msg`), tsc + tests (`pre-push`) |
-| Local stack | `compose.yaml`, root `pnpm dev` / `check` / `fix` scripts, Dev Container |
-| CI | [`ci.yml`](.github/workflows/ci.yml): path-filtered frontend & backend jobs, coverage, Docker build with GHA cache, Trivy scan, GHCR publish on `main`, single `CI success` gate |
-| Security | CodeQL (JS/TS + Python), gitleaks, dependency review, least-privilege workflow permissions |
-| Releases & deps | release-please (changelog, semver tags), grouped Dependabot updates, Neon preview DB per PR |
-
-### Quality Gates
+| Toolchain | Node 26 LTS (`.node-version`), `packageManager: pnpm@10.23.0`, Python 3.12 via `uv` |
+| Frontend | Biome 2, `tsc --noEmit`, 12 verification suites (`pnpm --dir frontend test`) |
+| Backend | Ruff lint + format, 41 pytest tests with mocked LLM and network calls |
+| Git hooks | Lefthook: Biome, Ruff, gitleaks, commitlint, pre-push tests |
+| CI/CD | Path-filtered jobs, Docker build + Trivy scan, CodeQL, dependency review, release-please |
 
 ```bash
-pnpm check        # Biome ci, tsc, frontend tests, Ruff lint + format, pytest
-pnpm fix          # auto-fix both stacks
+pnpm check   # Biome, tsc, frontend tests, Ruff, pytest
+pnpm fix     # auto-fix both stacks
 ```
 
 ---
 
-## Documentation Index
+## Roadmap
 
-- [Product Requirements Document (PRD)](docs/product/PRD.md)
-- [C4 System Architecture](docs/architecture/SYSTEM_C4.md)
-- [Entity-Relationship Diagram (ERD)](docs/architecture/DATABASE_ERD.md)
-- [API Contracts](docs/architecture/API_CONTRACTS.md)
-- [Data Flow](docs/architecture/DATA_FLOW.md)
-- [Git Workflow](docs/architecture/GIT_WORKFLOW.md)
-- [Contributing Guide](CONTRIBUTING.md)
-- [System Prompts & Guardrail Engineering](PROMPTS.md)
-- [Frontend Workspace Documentation](frontend/README.md)
-- [Backend Workspace Documentation](backend/README.md)
+| Status | Milestone |
+|---|---|
+| ✅ Shipped | Landing page, Demo Archive mode, guided tour, deep links |
+| 🗓️ Planned | Mobile and touch hardening, WCAG 2.2 AA audit, 3D performance budgets, offline PWA |
+| 🗓️ Planned | Compliance: data residency, audit trails, PDPL / NCA alignment |
+| 🗓️ Planned | Enterprise: white-label theming, visitor analytics, SSO, multi-tenant admin |
+| 🗓️ Planned | Content: more UNESCO sites, Arabic narration voices, itineraries |
 
 ---
 
+## Documentation
+
+- [Product Requirements (PRD)](docs/product/PRD.md)
+- [C4 Architecture](docs/architecture/SYSTEM_C4.md) · [ERD](docs/architecture/DATABASE_ERD.md) · [API Contracts](docs/architecture/API_CONTRACTS.md) · [Data Flow](docs/architecture/DATA_FLOW.md)
+- [Git Workflow](docs/architecture/GIT_WORKFLOW.md) · [Contributing](CONTRIBUTING.md)
+- [System Prompts & Guardrails](PROMPTS.md)
+- [Frontend](frontend/README.md) · [Backend](backend/README.md)
+
 ## License
 
-This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** license. See [LICENSE](LICENSE) for full details.
+[Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](LICENSE).

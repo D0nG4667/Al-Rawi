@@ -4,6 +4,7 @@ import { Compass, ScrollText, Sparkles, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type React from "react";
 import ThinkingStep from "@/components/chat/ThinkingStep";
+import DemoBadge from "@/components/explore/DemoBadge";
 import ManuscriptMessage from "@/components/explore/ManuscriptMessage";
 import type { ChatMessage, ChatSource } from "@/components/explore/types";
 import HeritageOrnament from "@/components/ui/HeritageOrnament";
@@ -45,11 +46,15 @@ export default function OracleSheet({
 	const siteTitle = locale === "ar" ? siteMeta.titleAr : siteMeta.titleEn;
 	const starterPrompts =
 		siteMeta.prompts[persona][locale === "ar" ? "ar" : "en"];
+	const lastOracle = [...chatHistory]
+		.reverse()
+		.find((m) => m.role === "oracle");
+	const showDemoBadge = lastOracle?.origin === "demo";
 
 	return (
 		<aside
 			aria-label={tDash("oracleTrigger")}
-			className="fixed inset-x-3 bottom-3 top-24 md:inset-y-24 md:inset-inline-end-6 md:inset-inline-start-auto md:w-[460px] z-30 glass-panel border border-[var(--border-strong)] flex flex-col pointer-events-auto overflow-hidden animate-in fade-in duration-200"
+			className="fixed inset-x-3 bottom-3 top-24 md:inset-y-24 md:end-6 md:start-auto md:w-[460px] z-30 glass-panel border border-[var(--border-strong)] flex flex-col pointer-events-auto overflow-hidden animate-in fade-in duration-200"
 		>
 			<HeritageOrnament variant="najdi-band" />
 
@@ -66,6 +71,7 @@ export default function OracleSheet({
 						<p className="text-[10px] font-mono-tabular uppercase tracking-widest text-[var(--accent-gold)]">
 							{siteTitle} · {siteMeta.unescoRef}
 						</p>
+						{showDemoBadge && <DemoBadge className="mt-1" />}
 					</div>
 				</div>
 
@@ -91,7 +97,10 @@ export default function OracleSheet({
 			</header>
 
 			{/* Persona Selector Bar */}
-			<div className="px-5 py-2.5 border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
+			<div
+				data-tour="persona-pill"
+				className="px-5 py-2.5 border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)]"
+			>
 				<PersonaSelector />
 			</div>
 

@@ -21,6 +21,7 @@ interface MajlisStudioModalProps {
 	isPlaying: boolean;
 	script: PodcastScript | null;
 	hasAudioAnalyser: boolean;
+	notice?: string;
 	onClose: () => void;
 	onTitleChange: (title: string) => void;
 	onLineChange: (
@@ -42,6 +43,7 @@ export default function MajlisStudioModal({
 	isPlaying,
 	script,
 	hasAudioAnalyser,
+	notice,
 	onClose,
 	onTitleChange,
 	onLineChange,
@@ -183,6 +185,12 @@ export default function MajlisStudioModal({
 											<Square className="w-3.5 h-3.5" />
 										</button>
 									</div>
+								)}
+
+								{notice && (
+									<output className="block text-[11px] text-[var(--accent-terracotta)] mb-2">
+										{notice}
+									</output>
 								)}
 
 								<button

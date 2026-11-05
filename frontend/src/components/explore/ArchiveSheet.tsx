@@ -72,7 +72,7 @@ export default function ArchiveSheet({
 	return (
 		<aside
 			aria-label={tDash("archiveTrigger")}
-			className="fixed inset-x-3 bottom-3 top-24 md:inset-y-24 md:inset-inline-start-6 md:inset-inline-end-auto md:w-[400px] z-30 glass-panel border border-[var(--border-strong)] flex flex-col pointer-events-auto overflow-hidden animate-in fade-in duration-200"
+			className="fixed inset-x-3 bottom-3 top-24 md:inset-y-24 md:start-6 md:end-auto md:w-[400px] z-30 glass-panel border border-[var(--border-strong)] flex flex-col pointer-events-auto overflow-hidden animate-in fade-in duration-200"
 		>
 			<HeritageOrnament variant="najdi-band" />
 

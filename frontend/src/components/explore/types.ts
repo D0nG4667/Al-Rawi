@@ -10,6 +10,7 @@ export interface ChatMessage {
 	text: string;
 	sources?: ChatSource[];
 	isNew?: boolean;
+	origin?: "live" | "demo";
 }
 
 export interface UploadedDoc {
