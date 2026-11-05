@@ -54,7 +54,7 @@ export default function OracleSheet({
 	return (
 		<aside
 			aria-label={tDash("oracleTrigger")}
-			className="fixed inset-x-3 bottom-3 top-24 md:inset-y-24 md:inset-inline-end-6 md:inset-inline-start-auto md:w-[460px] z-30 glass-panel border border-[var(--border-strong)] flex flex-col pointer-events-auto overflow-hidden animate-in fade-in duration-200"
+			className="fixed inset-x-3 bottom-3 top-24 md:inset-y-24 md:end-6 md:start-auto md:w-[460px] z-30 glass-panel border border-[var(--border-strong)] flex flex-col pointer-events-auto overflow-hidden animate-in fade-in duration-200"
 		>
 			<HeritageOrnament variant="najdi-band" />
 
@@ -97,7 +97,10 @@ export default function OracleSheet({
 			</header>
 
 			{/* Persona Selector Bar */}
-			<div className="px-5 py-2.5 border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
+			<div
+				data-tour="persona-pill"
+				className="px-5 py-2.5 border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)]"
+			>
 				<PersonaSelector />
 			</div>
 

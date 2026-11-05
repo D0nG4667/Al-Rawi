@@ -28,7 +28,9 @@ export default async function LandingHero({
 				className="relative z-10 w-full max-w-6xl mx-auto px-6 py-4 flex items-center justify-between"
 			>
 				<span className="font-display font-bold text-lg tracking-wide">
-					الراوي · {tCommon("title")}
+					{locale === "ar"
+						? "الراوي · Al-Rawi"
+						: `الراوي · ${tCommon("title")}`}
 				</span>
 				<div className="flex items-center gap-2">
 					<ThemeToggle />

@@ -35,7 +35,7 @@ export default function CitationDrawer({
 	if (!isOpen || !citation) return null;
 
 	return (
-		<div className="fixed inset-y-4 inset-inline-end-4 w-88 max-w-[calc(100vw-2rem)] glass-panel border border-[var(--border-strong)] z-50 flex flex-col text-[var(--text-primary)] overflow-hidden animate-in fade-in duration-200">
+		<div className="fixed inset-y-4 end-4 w-88 max-w-[calc(100vw-2rem)] glass-panel border border-[var(--border-strong)] z-50 flex flex-col text-[var(--text-primary)] overflow-hidden animate-in fade-in duration-200">
 			<HeritageOrnament variant="najdi-band" />
 			<header className="p-4 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-elevated)]">
 				<div className="flex items-center gap-2.5">

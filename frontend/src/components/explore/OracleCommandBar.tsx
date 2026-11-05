@@ -115,7 +115,7 @@ export default function OracleCommandBar({
 						onClick={() => onSendChat()}
 						disabled={isThinking || !chatInput.trim()}
 						aria-label="Submit inquiry to Al-Rawi Oracle"
-						className="absolute inset-inline-end-2 p-1.5 rounded-lg heritage-chip disabled:opacity-30 cursor-pointer"
+						className="absolute end-2 p-1.5 rounded-lg heritage-chip disabled:opacity-30 cursor-pointer"
 					>
 						<Send className="w-4 h-4" />
 					</button>

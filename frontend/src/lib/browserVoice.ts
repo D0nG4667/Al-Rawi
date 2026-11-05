@@ -6,7 +6,11 @@ export function speakWithBrowserVoice(
 	locale: VoiceLocale,
 	onEnd: () => void,
 ): boolean {
-	if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+	if (
+		lines.length === 0 ||
+		typeof window === "undefined" ||
+		!("speechSynthesis" in window)
+	) {
 		return false;
 	}
 	window.speechSynthesis.cancel();

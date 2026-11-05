@@ -11,12 +11,12 @@ const PILLARS = [
 ] as const;
 
 /** Source institutions the archive is designed around. Names only — no logos or endorsements. */
-const SOURCE_INSTITUTIONS: readonly string[] = [
-	"UNESCO World Heritage Centre",
-	"Royal Commission for AlUla",
-	"Diriyah Gate Development Authority",
-	"King Abdulaziz Foundation for Research and Archives (Darah)",
-];
+const SOURCE_KEYS = [
+	"sourceUnesco",
+	"sourceRcu",
+	"sourceDgda",
+	"sourceDarah",
+] as const;
 
 export default async function TrustBand(): Promise<React.ReactElement> {
 	const t = await getTranslations("Landing");
@@ -65,12 +65,12 @@ export default async function TrustBand(): Promise<React.ReactElement> {
 						{t("sourcesLabel")}
 					</p>
 					<ul className="flex flex-wrap justify-center gap-2">
-						{SOURCE_INSTITUTIONS.map((name) => (
+						{SOURCE_KEYS.map((key) => (
 							<li
-								key={name}
+								key={key}
 								className="text-xs px-3 py-1.5 rounded-full border border-[var(--border-subtle)] text-[var(--text-secondary)]"
 							>
-								{name}
+								{t(key)}
 							</li>
 						))}
 					</ul>

@@ -14,14 +14,17 @@ interface GuidedTourProps {
 
 const SPOTLIGHT_PADDING = 8;
 const CARD_GAP = 16;
-/** Frames to wait for an anchor: ~0.5 s normally, ~10 s for the answer citation. */
-const ANCHOR_WAIT_FRAMES = { default: 30, citation: 600 } as const;
+/** Wall-clock ms to wait for an anchor: 0.5 s normally, 10 s for the answer citation. */
+const ANCHOR_WAIT_MS = { default: 500, citation: 10_000 } as const;
 
 function findAnchor(anchor: string): HTMLElement | null {
-	const element = document.querySelector<HTMLElement>(
+	const elements = document.querySelectorAll<HTMLElement>(
 		`[data-tour="${anchor}"]`,
 	);
-	return element && element.getClientRects().length > 0 ? element : null;
+	for (const element of elements) {
+		if (element.getClientRects().length > 0) return element;
+	}
+	return null;
 }
 
 function cardPosition(rect: DOMRect | null): React.CSSProperties {
@@ -54,11 +57,11 @@ export default function GuidedTour({
 	useEffect(() => {
 		if (!isActive || !step) return;
 		let frame = 0;
-		let attempts = 0;
-		const limit =
+		const startTime = performance.now();
+		const limitMs =
 			step.anchor === "citation-chip"
-				? ANCHOR_WAIT_FRAMES.citation
-				: ANCHOR_WAIT_FRAMES.default;
+				? ANCHOR_WAIT_MS.citation
+				: ANCHOR_WAIT_MS.default;
 		setRect(null);
 		const locate = (): void => {
 			const element = findAnchor(step.anchor);
@@ -66,8 +69,7 @@ export default function GuidedTour({
 				setRect(element.getBoundingClientRect());
 				return;
 			}
-			attempts += 1;
-			if (attempts > limit) {
+			if (performance.now() - startTime > limitMs) {
 				next();
 				return;
 			}
@@ -210,7 +212,12 @@ export default function GuidedTour({
 								<>
 									<button
 										type="button"
-										onClick={next}
+										onClick={() => {
+											if (!findAnchor("citation-chip")) {
+												onAskForMe();
+											}
+											next();
+										}}
 										className={secondaryButtonClass}
 									>
 										{t("next")}

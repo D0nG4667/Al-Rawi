@@ -29,6 +29,7 @@ import { speakWithBrowserVoice, stopBrowserVoice } from "@/lib/browserVoice";
 import { buildDemoMajlisScript } from "@/lib/demo/demoMajlis";
 import type { ExploreParams } from "@/lib/exploreParams";
 import { askOracle, OracleRequestError } from "@/lib/oracleClient";
+import { TOUR_STEPS } from "@/lib/tourSteps";
 import { HERITAGE_SITES, useUIStore } from "@/store/useUIStore";
 
 interface ExploreDashboardProps {
@@ -90,6 +91,7 @@ export default function ExploreDashboard({
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [audioAnalyser, setAudioAnalyser] = useState<AnalyserNode | null>(null);
 	const [majlisNotice, setMajlisNotice] = useState("");
+	const [isBrowserVoiceActive, setIsBrowserVoiceActive] = useState(false);
 	const isBrowserVoiceRef = useRef(false);
 
 	// Audio element & context references
@@ -172,6 +174,7 @@ export default function ExploreDashboard({
 		}
 		stopBrowserVoice();
 		isBrowserVoiceRef.current = false;
+		setIsBrowserVoiceActive(false);
 		setAudioAnalyser(null);
 		setIsPlaying(false);
 	}, []);
@@ -244,6 +247,9 @@ export default function ExploreDashboard({
 		setChatInput("");
 		setActiveQuery(query);
 		setActiveDrawer("oracle");
+		if (tour.isActive && TOUR_STEPS[tour.stepIndex]?.id === "ask") {
+			tour.next();
+		}
 		setChatHistory((prev) => [
 			...prev.map((m) => ({ ...m, isNew: false })),
 			{ id: `user-${Date.now()}`, role: "user", text: query },
@@ -461,11 +467,13 @@ export default function ExploreDashboard({
 				langKey,
 				() => {
 					isBrowserVoiceRef.current = false;
+					setIsBrowserVoiceActive(false);
 					setIsPlaying(false);
 				},
 			);
 			if (spoke) {
 				isBrowserVoiceRef.current = true;
+				setIsBrowserVoiceActive(true);
 				setIsPlaying(true);
 				setMajlisNotice(tDemo("audioFallback"));
 			} else {
@@ -627,7 +635,7 @@ export default function ExploreDashboard({
 				isStreaming={isMajlisStreaming}
 				isPlaying={isPlaying}
 				script={majlisScript}
-				hasAudioAnalyser={Boolean(audioAnalyser)}
+				hasAudioAnalyser={Boolean(audioAnalyser) || isBrowserVoiceActive}
 				notice={majlisNotice}
 				onClose={() => {
 					playClick();
@@ -653,7 +661,8 @@ export default function ExploreDashboard({
 				tour={tour}
 				onAskForMe={() =>
 					handleSendChat(
-						HERITAGE_SITES[activeSite].prompts[persona][langKey][0],
+						chatInput.trim() ||
+							HERITAGE_SITES[activeSite].prompts[persona][langKey][0],
 					)
 				}
 			/>
