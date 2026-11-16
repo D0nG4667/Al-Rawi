@@ -3,7 +3,7 @@
 # Stage 1: Dependency builder using official astral-sh/uv image
 FROM ghcr.io/astral-sh/uv:latest AS uv-installer
 
-FROM python:3.12-slim AS builder
+FROM python:3.15-slim AS builder
 
 WORKDIR /app
 
@@ -23,7 +23,7 @@ COPY uv.lock* ./
 RUN uv pip install --system .
 
 # Stage 2: Final lightweight runtime container
-FROM python:3.12-slim AS runner
+FROM python:3.15-slim AS runner
 
 WORKDIR /app
 
